@@ -5,35 +5,52 @@ body {
 
 .login-page {
   background: linear-gradient(to bottom, #462362, #7e4982);
-  background-image: url('/src/pages/styles/templates/nasa_wpp.png'); /* substitua com a imagem real se quiser */
+  background-image: url('/src/pages/styles/templates/damas_bkg.png'); /* substitua com a imagem real se quiser */
   background-size: cover;
   background-position: center;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+/* Overlay escuro no fundo */
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* Reduzi a opacidade do overlay para 40% */
+  z-index: 1;
 }
 
 .login-box {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.85); /* Aumentei a opacidade para 85% */
+  backdrop-filter: blur(8px);
   border-radius: 12px;
   padding: 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   max-width: 400px;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .login-form h2 {
   text-align: center;
   margin-bottom: 24px;
-  color: #333;
+  color: #000;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .input-group {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
-  background: #fbf2e2ff;
+  background: rgba(251, 242, 226, 0.9); /* Aumentei a opacidade do input */
   border-radius: 24px;
   padding: 10px 15px;
 }
@@ -49,7 +66,11 @@ body {
   flex: 1;
   outline: none;
   font-size: 16px;
-  color: #333;
+  color: #000;
+}
+
+.input-group input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .options {
@@ -57,24 +78,17 @@ body {
   justify-content: space-between;
   margin-bottom: 20px;
   font-size: 14px;
-  color: #555;
+  color: #b69348ff;
 }
 
 .login-button {
-  background: #b69348ff;
+  background: rgba(182, 147, 72, 0.9); /* Botão levemente transparente */
   color: white;
   padding: 12px;
   border: none;
   border-radius: 24px;
   width: 100%;
   font-size: 16px;
-  cursor: pointer;
-}
-
-.create-account {
-  margin-top: 16px;
-  text-align: center;
-  color: #b69348ff;
   cursor: pointer;
 }
 
@@ -85,7 +99,7 @@ body {
 }
 
 .logo {
-  width: 160px;
+  width: 240px;
   height: auto;
 }
 

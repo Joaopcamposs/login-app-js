@@ -36,14 +36,14 @@ export default function Login() {
       <div className="login-box">
         <form className="login-form" onSubmit={handleLoginFake}>
           <div className="logo-container">
-            <img src="src/pages/styles/templates/logo_nasa.png" alt="Logo" className="logo" />
+            <img src="src/pages/styles/templates/logo_blanca.png" alt="Logo" className="logo" />
           </div>
           <h2>Login</h2>
           <div className="input-group">
             <span className="icon">👤</span>
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -52,17 +52,12 @@ export default function Login() {
             <span className="icon">🔒</span>
             <input
               type="password"
-              placeholder="Password"
+              placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="options">
-            <label><input type="checkbox" /> remember me</label>
-            <a href="#">forgot password</a>
-          </div>
           <button type="submit" className="login-button">Login</button>
-          <div className="create-account">Create Account</div>
         </form>
       </div>
     </div>
