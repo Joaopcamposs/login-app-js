@@ -117,6 +117,13 @@ body {
     margin-top: 4px;
   }
   
+  .error-text {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-left: 16px;
+    display: flex;
+    align-items: center;
+  }
   
   /* Table */
   .locacoes-table {
@@ -158,5 +165,28 @@ body {
     margin: 4px;
     margin-top: 10px;
     margin-bottom: -10px;
+  }
+  
+  .loading-message,
+  .error-message,
+  .empty-message {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+    color: #666;
+  }
+
+  .error-message {
+    color: #d32f2f;
+  }
+
+  .fallback-notice {
+    font-size: 14px;
+    color: #666;
+    margin-top: 8px;
+    font-style: italic;
   }
   
