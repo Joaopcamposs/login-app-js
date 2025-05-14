@@ -22,7 +22,21 @@ body {
     border-radius: 12px;
     padding: 16px 0;
     align-items: center;
+    overflow-y: auto;
+    max-height: 100vh;
+    scrollbar-width: thin; /* Firefox */
   }
+  
+  /* Estiliza a scrollbar no Chrome */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+  }
+  
   
   .menu-items {
     display: flex;
