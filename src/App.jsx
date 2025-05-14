@@ -10,10 +10,11 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route
           path="/dashboard"
           element={isAuth ? <Dashboard /> : <Navigate to="/" />}
-        />
+        /> */}
       </Routes>
     </BrowserRouter>
   )

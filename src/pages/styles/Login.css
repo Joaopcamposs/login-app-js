@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-page {
+  background: linear-gradient(to bottom, #462362, #7e4982);
+  background-image: url('/src/pages/styles/templates/nasa_wpp.png'); /* substitua com a imagem real se quiser */
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  background-color: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  background: #fdd0dd;
+  border-radius: 24px;
+  padding: 10px 15px;
+}
+
+.input-group .icon {
+  margin-right: 10px;
+  color: #fff;
+}
+
+.input-group input {
+  border: none;
+  background: transparent;
+  flex: 1;
+  outline: none;
+  font-size: 16px;
+  color: #333;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.login-button {
+  background: #6b2d7c;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 24px;
+  width: 100%;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.create-account {
+  margin-top: 16px;
+  text-align: center;
+  color: #6b2d7c;
+  cursor: pointer;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 160px;
+  height: auto;
+}
+

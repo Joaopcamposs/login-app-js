@@ -1,12 +1,24 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { saveToken } from '../utils/auth'
-import { useNavigate } from 'react-router-dom'
+import './styles/Login.css'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+
+  const handleLoginFake = (e) => {
+    e.preventDefault()
+    // Simulação de login (substituir por chamada de API)
+    if (email && password) {
+      localStorage.setItem('token', 'fake-token')
+      navigate('/dashboard')
+    } else {
+      alert('Preencha todos os campos')
+    }
+  }
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -14,25 +26,45 @@ export default function Login() {
       const response = await api.post('/login', { email, password })
       saveToken(response.data.token)
       navigate('/dashboard')
-    } catch {
+    } catch (err) {
       alert('Login falhou')
     }
   }
 
   return (
-    <form onSubmit={handleLogin}>
-      <h1>Login</h1>
-      <input
-        type="email"
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Senha"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Entrar</button>
-    </form>
+    <div className="login-page">
+      <div className="login-box">
+        <form className="login-form" onSubmit={handleLoginFake}>
+          <div className="logo-container">
+            <img src="src/pages/styles/templates/logo_nasa.png" alt="Logo" className="logo" />
+          </div>
+          <h2>Login</h2>
+          <div className="input-group">
+            <span className="icon">👤</span>
+            <input
+              type="text"
+              placeholder="Username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <span className="icon">🔒</span>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className="options">
+            <label><input type="checkbox" /> remember me</label>
+            <a href="#">forgot password</a>
+          </div>
+          <button type="submit" className="login-button">Login</button>
+          <div className="create-account">Create Account</div>
+        </form>
+      </div>
+    </div>
   )
 }
