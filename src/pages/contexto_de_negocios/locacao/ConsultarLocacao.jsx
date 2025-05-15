@@ -1,39 +1,28 @@
 import { useState, useEffect } from 'react'
-import {
-  Box,
-  Button,
-  Grid,
-  GridItem,
-  Input,
-  FormControl,
-  FormLabel,
-  Select,
-  Checkbox,
-  Text,
-  VStack,
-  HStack,
-  IconButton,
-  useToast,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Textarea,
-  Divider,
-  Card,
-  CardBody,
-  Heading,
-  Flex,
-  Spinner,
-  InputGroup,
-  InputLeftAddon,
-} from '@chakra-ui/react'
-import TextField from '@mui/material/TextField'
 import moment from 'moment/moment'
 import { API_V1_PREFIX } from '../../../App'
 import useAxiosWithTimeout from '../../../services/AxiosWithTimeout'
-import FloatingInput from '../../../components/FloatingInput'
+import {
+  Box,
+  Stack,
+  Snackbar,
+  Alert,
+  Divider,
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  InputAdornment,
+  Checkbox,
+  IconButton,
+  Autocomplete,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material'
+import { SnackbarProvider, useSnackbar } from 'notistack'
 
 export default function ConsultarLocacao() {
   const [isLoadingBusca, setIsLoadingBusca] = useState(false)
@@ -51,9 +40,44 @@ export default function ConsultarLocacao() {
   const [trajes, setTrajes] = useState([])
   const [acessorios, setAcessorios] = useState([])
   const [nomeCliente, setNomeCliente] = useState(undefined)
+  const [formValues, setFormValues] = useState({
+    nome_cliente: '',
+    nome_dama: '',
+    nome_noiva: '',
+    idade: '',
+    cpf: '',
+    data_venda: undefined,
+    data_evento: undefined,
+    data_retirada: undefined,
+    data_devolucao: undefined,
+    valor_total: '',
+    valor_desconto: 0,
+    valor_final: '',
+    valor_entrada: 0,
+    valor_restante: '',
+    observacoes: '',
+    vendedor: '',
+    codigo_trajes: [],
+    descricao_trajes: [],
+    tamanho_trajes: [],
+    valor_trajes: [],
+    codigo_acessorios: [],
+    descricao_acessorios: [],
+    valor_acessorios: [],
+  })
 
+  
+  const [trajeSelecionado, setTrajeSelecionado] = useState({});
+  const [trajesSelecionados, setTrajesSelecionados] = useState([]);
+  const [newTrajesSelecionados] = useState([]);
+
+  const [acessorioSelecionado, setAcessorioSelecionado] = useState({});
+  const [acessoriosSelecionados, setAcessoriosSelecionados] = useState([]);
+  const [newAcessoriosSelecionados] = useState([]);
+  
+  const [dep, setDep] = useState();
   const { makeRequest } = useAxiosWithTimeout();
-  const toast = useToast()
+  const { enqueueSnackbar } = useSnackbar();
 
   function limparCampos() {
     setCodigoLocacao('');
@@ -91,33 +115,6 @@ export default function ConsultarLocacao() {
     });
   }
 
-  // Form values state
-  const [formValues, setFormValues] = useState({
-    nome_cliente: '',
-    nome_dama: '',
-    nome_noiva: '',
-    idade: '',
-    cpf: '',
-    data_venda: undefined,
-    data_evento: undefined,
-    data_retirada: undefined,
-    data_devolucao: undefined,
-    valor_total: '',
-    valor_desconto: 0,
-    valor_final: '',
-    valor_entrada: 0,
-    valor_restante: '',
-    observacoes: '',
-    vendedor: '',
-    codigo_trajes: [],
-    descricao_trajes: [],
-    tamanho_trajes: [],
-    valor_trajes: [],
-    codigo_acessorios: [],
-    descricao_acessorios: [],
-    valor_acessorios: [],
-  })
-
   // Handlers
   const buscarClientes = async () => {
     try {
@@ -133,6 +130,11 @@ export default function ConsultarLocacao() {
       }
     } catch (erro) {
       setMensagemErro(erro);
+      // Para mostrar uma notificação: Variantes disponíveis: 'default', 'success', 'error', 'warning', 'info'
+      enqueueSnackbar('Mensagem de sucesso!', { 
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
     }
   };
   const buscarUsuarios = async () => {
@@ -277,7 +279,6 @@ export default function ConsultarLocacao() {
       if (response.status === 200 && response.data) {
         setLocacaoEncontrado(true);
         setLocacaoAtualizado(true);
-        setFlagSucesso(true);
         setMensagemSucesso('Locação atualizada com sucesso!');
         await preencherForms(
           response.data,
@@ -305,7 +306,6 @@ export default function ConsultarLocacao() {
         setLocacaoEncontrado(false); // flag invertida, deletar componentes
         setLocacaoDeletado(true);
         setMensagemErro('');
-        setFlagSucesso(true);
         setMensagemSucesso('Locacao deletada com sucesso!');
         limparCampos();
       }
@@ -319,11 +319,137 @@ export default function ConsultarLocacao() {
     setIsLoadingDel(false);
   };
 
+  const handleUpdateFormsTrajes = (newTraje, shouldAdd) => {
+    const newFormValues = { ...formValues };
 
-  const handleAutocompleteChange = (event, newValue) => {
+    if (shouldAdd) {
+      newFormValues.codigo_trajes.push(newTraje.codigo);
+      newFormValues.descricao_trajes.push(newTraje.descricao);
+      newFormValues.tamanho_trajes.push(newTraje.tamanho);
+      newFormValues.valor_trajes.push(newTraje.valor);
+    } else {
+      const index = newTraje; // no else, o newTraje é o index do array
+      newFormValues.codigo_trajes.splice(index, 1);
+      newFormValues.descricao_trajes.splice(index, 1);
+      newFormValues.tamanho_trajes.splice(index, 1);
+      newFormValues.valor_trajes.splice(index, 1);
+    }
+
+    setFormValues(newFormValues);
+    atualizarValores();
+  };
+
+  const handleTrajeSelecionadoChange = (event) => {
+    const codigo = event.target.value;
+    const trajeSelecionadoAtual = trajes.find(
+      (traje) => traje.codigo === codigo,
+    );
+    const newTraje = { ...trajeSelecionadoAtual };
+    const isTrajeSelecionado = trajesSelecionados.find(
+      (traje) => traje.codigo === newTraje.codigo,
+    );
+    if (!isTrajeSelecionado) {
+      const newTajesSelecionados = [...trajesSelecionados, newTraje];
+      setTrajesSelecionados(newTajesSelecionados);
+    }
+    setTrajeSelecionado(newTraje);
+    handleUpdateFormsTrajes(newTraje, true);
+  };
+
+  const handleTrajeRemovido = (trajeIndex) => {
+    setTrajesSelecionados((prevState) => prevState.filter((_, index) => index !== trajeIndex));
+    handleUpdateFormsTrajes(trajeIndex, false);
+  };
+
+  const handleUpdateFormsAcessorios = (newAcessorio, shouldAdd) => {
+    const newFormValues = { ...formValues };
+
+    if (shouldAdd) {
+      newFormValues.codigo_acessorios.push(newAcessorio.codigo);
+      newFormValues.descricao_acessorios.push(newAcessorio.descricao);
+      newFormValues.valor_acessorios.push(newAcessorio.valor);
+    } else {
+      // eslint-disable-next-line
+      const index = newAcessorio; // no else, o newAcessorio é o index do array
+      newFormValues.codigo_acessorios.splice(index, 1);
+      newFormValues.descricao_acessorios.splice(index, 1);
+      newFormValues.valor_acessorios.splice(index, 1);
+    }
+
+    setFormValues(newFormValues);
+    atualizarValores();
+  };
+
+  const handleAcessorioSelecionadoChange = (event) => {
+    const codigo = event.target.value;
+    const acessorioSelecionadoAtual = acessorios.find(
+      (acessorio) => acessorio.codigo === codigo,
+    );
+    const newAcessorio = { ...acessorioSelecionadoAtual };
+    const isAcessorioSelecionado = acessoriosSelecionados.find(
+      (acessorio) => acessorio.codigo === newAcessorio.codigo,
+    );
+    if (!isAcessorioSelecionado) {
+      const newAcessoriosSelecionadosAtual = [
+        ...acessoriosSelecionados,
+        newAcessorio,
+      ];
+      setAcessoriosSelecionados(newAcessoriosSelecionadosAtual);
+    }
+    setAcessorioSelecionado(newAcessorio);
+    handleUpdateFormsAcessorios(newAcessorio, true);
+  };
+
+  const handleAcessorioRemovido = (acessorioIndex) => {
+    setAcessoriosSelecionados((prevState) => (
+      prevState.filter((_, index) => index !== acessorioIndex)));
+    handleUpdateFormsAcessorios(acessorioIndex, false);
+  };
+
+  const handleChangeDataEvento = (event) => {
+    const { name, value } = event.target;
+
+    // transforma a data do evento em um objeto Moment.js
+    const dataEvento = moment(value);
+
+    let dataRetirada = dataEvento.clone();
+    let dataDevolucao = dataEvento.clone();
+
+    // se o evento for no sábado
+    if (dataEvento.day() === 6) {
+      // 6 é o índice do sábado no Moment.js
+      dataRetirada = dataEvento.clone().subtract(1, 'day');
+      dataDevolucao = dataEvento.clone().add(2, 'day');
+    } else if (dataEvento.day() === 1) {
+      // se o evento for na segunda-feira - 1 é o índice da segunda-feira no Moment.js
+      dataRetirada = dataEvento.clone().subtract(2, 'day');
+      dataDevolucao = dataEvento.clone().add(1, 'day');
+    } else {
+      dataRetirada = dataEvento.clone().subtract(1, 'day');
+      dataDevolucao = dataEvento.clone().add(1, 'day');
+    }
+
+    setFormValues((prevState) => ({
+      ...prevState,
+      [name]: value,
+      data_retirada: dataRetirada.format('YYYY-MM-DD'),
+      data_devolucao: dataDevolucao.format('YYYY-MM-DD'),
+    }));
+  };
+
+  const handleAutocompleteChange = (event) => {
+    const newValue = event.target.value;
     setNomeCliente(newValue);
-    const selectedClient = clientes.find((client) => client.nome === newValue.nome);
-    setCpf(selectedClient.cpf);
+    
+    // Encontra o cliente selecionado
+    const selectedClient = clientes.find((client) => client.nome === newValue);
+    
+    // Verifica se encontrou um cliente antes de tentar acessar o CPF
+    if (selectedClient) {
+      setCpf(selectedClient.cpf);
+    } else {
+      setCpf(''); // Limpa o CPF se não encontrar o cliente
+    }
   };
 
   const handleChange = (event) => {
@@ -336,307 +462,642 @@ export default function ConsultarLocacao() {
 
   // Componente de busca
   const BuscaForm = () => (
-    <Box w="100%" maxW="220px" marginLeft='-10px'>
-      <VStack spacing={6} align="stretch" mb={8}>
+    <Box sx={{ width: 220, maxWidth: '220px', marginLeft: '-30px' }}>
+      <Stack spacing={5} mb={4}>
         {/* Buscar por Código */}
         <form onSubmit={handleBuscarPorCodigo}>
-          <VStack spacing={2} align="stretch">
-            <FormControl isRequired>
-              <FormLabel>Código da Locação</FormLabel>
-              <NumberInput>
-                <NumberInputField
-                  value={codigoLocacao}
-                  onChange={(e) => setCodigoLocacao(e.target.value)}
-                />
-              </NumberInput>
-            </FormControl>
+          <Stack spacing={2}>
+            <TextField
+              label="Código da Locação"
+              type="number"
+              value={codigoLocacao}
+              onChange={(e) => setCodigoLocacao(e.target.value)}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
             <Button
               type="submit"
-              colorScheme="blanca_escuro"
-              isLoading={isLoadingBusca}
-              loadingText="Buscando..."
-              width="100%"
+              variant="contained"
+              color="primary"
+              disabled={isLoadingBusca}
+              fullWidth
+              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
+              sx={{
+                color: 'white',
+              }}
             >
               Buscar por Código
             </Button>
-          </VStack>
+          </Stack>
         </form>
   
         {/* Buscar por CPF */}
         <form onSubmit={handleBuscarPorCPF}>
-          <VStack spacing={2} align="stretch">
-            <FormControl isRequired>
-              <FormLabel>CPF do Cliente</FormLabel>
-              <Input
-                type="tel"
-                value={cpfCliente}
-                onChange={(e) => setCpf(e.target.value)}
-              />
-            </FormControl>
+          <Stack spacing={2}>
+            <TextField
+              label="CPF do Cliente"
+              type="tel"
+              value={cpfCliente}
+              onChange={(e) => setCpf(e.target.value)}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
             <Button
               type="submit"
-              colorScheme="blanca_escuro"
-              isLoading={isLoadingBusca}
-              loadingText="Buscando..."
-              width="100%"
+              variant="contained"
+              color="primary"
+              disabled={isLoadingBusca}
+              fullWidth
+              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
+              sx={{
+                color: 'white',
+              }}
             >
               Buscar por CPF
             </Button>
-          </VStack>
+          </Stack>
         </form>
   
         {/* Buscar múltiplas locações por CPF */}
         <form onSubmit={handleBuscarTodasPorCPF}>
-          <VStack spacing={2} align="stretch">
-            <FormControl isRequired>
-              <FormLabel>Nome do Cliente</FormLabel>
-              <Select
-                placeholder="Selecione"
-                value={nomeCliente}
-                onChange={handleAutocompleteChange}
-              >
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.nome}>
-                    {cliente.nome}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
+          <Stack spacing={2}>
+            <TextField
+              select
+              label="Nome do Cliente"
+              value={nomeCliente || ''}
+              onChange={handleAutocompleteChange}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            >
+              {clientes.map((cliente) => (
+                <MenuItem key={cliente.id} value={cliente.nome}>
+                  {cliente.nome}
+                </MenuItem>
+              ))}
+            </TextField>
   
-            <FormControl isRequired>
-              <FormLabel>CPF do Cliente</FormLabel>
-              <Input
-                type="tel"
-                value={cpfCliente}
-                onChange={(e) => setCpf(e.target.value)}
-              />
-            </FormControl>
+            <TextField
+              label="CPF do Cliente"
+              type="tel"
+              value={cpfCliente}
+              onChange={(e) => setCpf(e.target.value)}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
   
             <Button
               type="submit"
-              colorScheme="blanca_escuro"
-              isLoading={isLoadingBusca}
-              loadingText="Buscando..."
-              width="100%"
+              variant="contained"
+              color="primary"
+              disabled={isLoadingBusca}
+              fullWidth
+              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
+              sx={{
+                color: 'white',
+                height: '36px', // Altura fixa do botão
+                fontSize: '0.8rem', // Tamanho da fonte menor
+                whiteSpace: 'nowrap', // Evita quebra de linha
+                overflow: 'hidden', // Esconde o conteúdo que exceder
+                textOverflow: 'ellipsis', // Adiciona ... quando o texto é muito longo
+                minWidth: 'unset', // Remove a largura mínima padrão
+                px: 2, // Padding horizontal
+              }}
             >
-              Lista Códigos por CPF
+              Listar Códigos por CPF
             </Button>
-          </VStack>
+          </Stack>
         </form>
-      </VStack>
+      </Stack>
     </Box>
   );
 
   // Componente de formulário principal
-  const FormularioPrincipal = () => (
-    <Grid templateColumns="repeat(3, 1fr)" gap={6}>
-      <GridItem>
-        <Card>
-          <CardBody>
-            <VStack spacing={2} align="stretch">
-              <Heading size="md" margin='auto' align='center'>Locação</Heading>
-              
-              <FloatingInput
-                label="Nome do Cliente"
-                name="nome_cliente"
-                value={formValues.nome_cliente}
-                onChange={handleChange}
-                isRequired
-              />
-              <FloatingInput
-                label="Nome da Dama"
-                name="nome_dama"
-                value={formValues.nome_dama}
-                onChange={handleChange}
-                isRequired
-              />
-              <FloatingInput
-                label="Nome da Noiva"
-                name="nome_noiva"
-                value={formValues.nome_noiva}
-                onChange={handleChange}
-                isRequired
-              />
-              
-              <Grid templateColumns="repeat(1, 1fr)" gap={4}>
-                <FloatingInput
-                  label="Idade"
-                  name="idade"
-                  type="number"
-                  value={formValues.idade}
+  const FormularioLocacao = () => (
+    <Grid container spacing={2} direction="column" width="220px">
+      <Grid item xs={4}>
+      <Typography variant="h6" >
+          Locação
+      </Typography>
+      </Grid>
+      <Grid item xs={12} >
+        <TextField
+            name="nome_cliente"
+            label="Nome do Cliente"
+            value={formValues.nome_cliente}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            required
+        />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="nome_dama"
+              label="Nome da Dama"
+              value={formValues.nome_dama}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="nome_noiva"
+              label="Nome da Noiva"
+              value={formValues.nome_noiva}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="idade"
+              label="Idade"
+              type="number"
+              value={formValues.idade}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="cpf"
+              label="CPF"
+              type="tel"
+              value={formValues.cpf}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="data_venda"
+              label="Data da Venda"
+              type="date"
+              value={formValues.data_venda}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="data_evento"
+              label="Data do Evento"
+              type="date"
+              value={formValues.data_evento}
+              onChange={handleChangeDataEvento}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="data_retirada"
+              label="Data da Retirada"
+              type="date"
+              value={formValues.data_retirada}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="data_devolucao"
+              label="Data da Devolução"
+              type="date"
+              value={formValues.data_devolucao}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              required
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="valor_total"
+              label="Valor Total"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                      <InputAdornment position="start">R$</InputAdornment>
+                ),
+              }}
+              value={formValues.valor_total}
+              onChange={(event) => {
+                handleChange(event);
+                setDep((prevDep) => !prevDep);
+              }}
+              disabled
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="valor_desconto"
+              label="Valor do Desconto"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                      <InputAdornment position="start">R$</InputAdornment>
+                ),
+              }}
+              value={formValues.valor_desconto}
+              onChange={(event) => {
+                handleChange(event);
+                setDep((prevDep) => !prevDep);
+              }}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="valor_final"
+              label="Valor Final"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                      <InputAdornment position="start">R$</InputAdornment>
+                ),
+              }}
+              value={formValues.valor_final}
+              onChange={(event) => {
+                handleChange(event);
+                setDep((prevDep) => !prevDep);
+              }}
+              disabled
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="valor_entrada"
+              label="Valor da Entrada"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                      <InputAdornment position="start">R$</InputAdornment>
+                ),
+              }}
+              value={formValues.valor_entrada}
+              onChange={(event) => {
+                handleChange(event);
+                setDep((prevDep) => !prevDep);
+              }}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="valor_restante"
+              label="Valor Restante"
+              type="number"
+              InputProps={{
+                startAdornment: (
+                      <InputAdornment position="start">R$</InputAdornment>
+                ),
+              }}
+              value={formValues.valor_restante}
+              onChange={(event) => {
+                handleChange(event);
+                setDep((prevDep) => !prevDep);
+              }}
+              disabled
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <TextField
+              name="observacoes"
+              label="Observações"
+              value={formValues.observacoes}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              multiline
+              rows={4}
+              inputProps={{ maxLength: 250 }}
+          />
+      </Grid>
+      <Grid item xs={12} >
+          <FormControl fullWidth>
+              <InputLabel id="vendedor-select-label">Vendedor</InputLabel>
+              <Select
+                  MenuProps={{ style: { maxHeight: 300 } }}
+                  labelId="vendedor-select-label"
+                  id="vendedor-select"
+                  name="vendedor"
+                  value={formValues.vendedor}
                   onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="CPF"
-                  name="cpf"
-                  type="tel"
-                  value={formValues.cpf}
-                  onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="Data da Venda"
-                  name="data_venda"
-                  type="date"
-                  value={formValues.data_venda}
-                  onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="Data do Evento"
-                  name="data_evento"
-                  type="date"
-                  value={formValues.data_evento}
-                  onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="Data da Retirada"
-                  name="data_retirada"
-                  type="date"
-                  value={formValues.data_retirada}
-                  onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="Data da Devolução"
-                  name="data_devolucao"
-                  type="date"
-                  value={formValues.data_devolucao}
-                  onChange={handleChange}
-                  isRequired
-                />
-
-                <FloatingInput
-                  label="Valor Total"
-                  name="valor_total"
-                  type="number"
-                  value={formValues.valor_total}
-                  onChange={(event) => {
-                    handleChange(event);
-                    setDep((prevDep) => !prevDep);
-                  }}
-                  isDisabled
-                  leftElement="R$"
-                />
-
-                <FloatingInput
-                  label="Valor do Desconto"
-                  name="valor_desconto"
-                  type="number"
-                  value={formValues.valor_desconto}
-                  onChange={(event) => {
-                    handleChange(event);
-                    setDep((prevDep) => !prevDep);
-                  }}
-                  leftElement="R$"
-                />
-
-                <FloatingInput
-                  label="Valor Final"
-                  name="valor_final"
-                  type="number"
-                  value={formValues.valor_final}
-                  onChange={(event) => {
-                    handleChange(event);
-                    setDep((prevDep) => !prevDep);
-                  }}
-                  isDisabled
-                  leftElement="R$"
-                />
-
-                <FloatingInput
-                  label="Valor da Entrada"
-                  name="valor_entrada"
-                  type="number"
-                  value={formValues.valor_entrada}
-                  onChange={(event) => {
-                    handleChange(event);
-                    setDep((prevDep) => !prevDep);
-                  }}
-                  leftElement="R$"
-                />
-
-                <FloatingInput
-                  label="Valor Restante"
-                  name="valor_restante"
-                  type="number"
-                  value={formValues.valor_restante}
-                  onChange={(event) => {
-                    handleChange(event);
-                    setDep((prevDep) => !prevDep);
-                  }}
-                  isDisabled
-                  leftElement="R$"
-                />
-
-                <FloatingInput
-                  label="Observações"
-                  name="observacoes"
-                  value={formValues.observacoes}
-                  onChange={handleChange}
-                  maxLength={250}
-                />
-              </Grid>
-              
-              <Button
-                colorScheme="green"
-                onClick={handleAtualizarLocacao}
-                isLoading={isLoadingAtt}
-                loadingText="Atualizando..."
+                  required
               >
-                Atualizar
-              </Button>
-
-              <Divider />
-
+                  {usuarios.map((usuario) => (
+                      <MenuItem key={usuario.nome} value={usuario.nome}>
+                          {usuario.nome}
+                      </MenuItem>
+                  ))}
+              </Select>
+          </FormControl>
+          <Grid item xs={12} style={{ marginTop: '32px' }}>
               <Button
-                colorScheme="red"
-                onClick={handleDeletarLocacao}
-                isLoading={isLoadingDel}
-                loadingText="Deletando..."
+                  variant="contained"
+                  onClick={handleAtualizarLocacao}
+                  color="success"
+                  fullWidth
               >
-                Deletar
+                  {isLoadingAtt ? 'Atualizando...' : 'Atualizar'}
               </Button>
-            </VStack>
-          </CardBody>
-        </Card>
-      </GridItem>
+          </Grid>
+          <Grid item xs={12} style={{ marginTop: '32px' }}>
+              <Button
+                  variant="contained"
+                  onClick={handleDeletarLocacao}
+                  color="error"
+                  fullWidth
+              >
+                  {isLoadingDel ? 'Deletando...' : 'Deletar'}
+              </Button>
+          </Grid>
+
+      </Grid>
 
       {/* Componentes de Trajes e Acessórios aqui */}
     </Grid>
+  );
+
+  const FormularioTrajes = () => (
+    <Grid container spacing={2} direction="column" width="220px" >
+      <Grid item xs={3}>
+        <Typography variant="h6" >
+            Trajes Locados
+        </Typography>
+        <FormControl fullWidth style={{ marginTop: '16px' }}>
+            <InputLabel id="trajes-select-label">Trajes</InputLabel>
+            <Select
+                MenuProps={{ style: { maxHeight: 300 } }}
+                labelId="trajes-select-label"
+                id="trajes-select"
+                value={trajeSelecionado.codigo || ''}
+                onChange={handleTrajeSelecionadoChange}
+            >
+                {trajes.map((traje) => (
+                    <MenuItem key={traje.codigo} value={traje.codigo}>
+                        {traje.codigo}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+        <div
+            style={{
+              border: '1px solid #ccc',
+              padding: '10px',
+              marginBottom: '10px',
+            }}
+        >
+            {formValues.codigo_trajes.map((codigo, index) => (
+                <div
+                    key={`traje-${index}`}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      marginBottom: '10px',
+                      marginTop: '10px',
+                    }}
+                >
+                    <TextField
+                        name="codigo_traje"
+                        label="Código"
+                        disabled={false}
+                        value={formValues.codigo_trajes[index]}
+                        onChange={(e) => {
+                          const newValue = formValues.codigo_trajes.slice();
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            codigo_trajes: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        name="tamanho_traje"
+                        label="Tamanho"
+                        disabled={false}
+                        value={formValues.tamanho_trajes[index]}
+                        onChange={(e) => {
+                          const newValue = formValues.tamanho_trajes.slice();
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            tamanho_trajes: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        
+                    />
+                    <TextField
+                        name="descricao_traje"
+                        label="Descrição"
+                        disabled={false}
+                        value={formValues.descricao_trajes[index]}
+                        onChange={(e) => {
+                          const newValue = formValues.descricao_trajes.slice();
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            descricao_trajes: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        
+                    />
+                    <TextField
+                        name="valor_traje"
+                        label="Valor"
+                        disabled={false}
+                        value={formValues.valor_trajes[index]}
+                        onChange={(e) => {
+                          const newValue = formValues.valor_trajes.slice();
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            valor_trajes: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        
+                    />
+                    <IconButton onClick={() => handleTrajeRemovido(index)}>
+                        <DeleteIcon/>
+                    </IconButton>
+                </div>
+            ))}
+        </div>
+      </Grid>
+    </Grid>
+  );
+
+  const FormularioAcessorios = () => (
+    <Grid container spacing={2} direction="column" width="220px" >
+      <Grid item xs={3}>
+        <Typography variant="h6" >
+            Acessórios Locados
+        </Typography>
+        <FormControl fullWidth style={{ marginTop: '16px' }}>
+            <InputLabel id="acessorios-select-label">
+                Acessórios
+            </InputLabel>
+            <Select
+                MenuProps={{ style: { maxHeight: 300 } }}
+                labelId="acessorios-select-label"
+                id="acessorios-select"
+                value={acessorioSelecionado.codigo || ''}
+                onChange={handleAcessorioSelecionadoChange}
+            >
+                {acessorios.map((acessorio) => (
+                    <MenuItem key={acessorio.codigo} value={acessorio.codigo}>
+                        {acessorio.codigo}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+        <div
+            style={{
+              border: '1px solid #ccc',
+              padding: '10px',
+              marginBottom: '10px',
+            }}
+        >
+            {formValues.codigo_acessorios.map((codigo, index) => (
+                <div
+                    key={`acessorio-${index}`}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      marginBottom: '10px',
+                      marginTop: '10px',
+                    }}
+                >
+                    <TextField
+                        name="codigo_acessorio"
+                        label="Código"
+                        disabled={false}
+                        value={formValues.codigo_acessorios[index]}
+                        onChange={(e) => {
+                          const newValue = Array.from(formValues.codigo_acessorios);
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            codigo_acessorios: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        name="descricao_acessorio"
+                        label="Descrição"
+                        disabled={false}
+                        value={formValues.descricao_acessorios[index]}
+                        onChange={(e) => {
+                          const newValue = Array.from(
+                            formValues.descricao_acessorios,
+                          );
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            descricao_acessorios: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        
+                    />
+                    <TextField
+                        name="valor_acessorio"
+                        label="Valor"
+                        disabled={false}
+                        value={formValues.valor_acessorios[index]}
+                        onChange={(e) => {
+                          const newValue = Array.from(formValues.valor_acessorios);
+                          newValue[index] = e.target.value;
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            valor_acessorios: newValue,
+                          }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        
+                    />
+                    <IconButton onClick={() => handleAcessorioRemovido(index)}>
+                        <DeleteIcon/>
+                    </IconButton>
+                </div>
+            ))}
+        </div>
+    </Grid>
+    </Grid>
   )
 
-
   return (
-    <Box p={4}>
-      <Flex gap={8}>
+    <Box sx={{ p: 4 }}>
+      <Box sx={{ display: 'flex', gap: 6 }}>
         <Box>
           <BuscaForm />
         </Box>
-  
-        <Divider orientation="vertical" height="auto" borderColor="gray.300" />
-  
-        <Box flex={1}>
+
+        <Divider 
+          orientation="vertical" 
+          flexItem 
+          sx={{ 
+            borderColor: 'grey.300',
+            height: 'auto'
+          }} 
+        />
+
+        <Box sx={{ flex: 1, marginTop: '-40px' }}>
           {locacaoEncontrado === undefined ? null : locacaoEncontrado ? (
-            <FormularioPrincipal />
+            <>
+              <Box sx={{ display: 'flex', gap: 6, mt: 4 }}>
+                <FormularioLocacao />
+                <FormularioTrajes />
+                <FormularioAcessorios />
+              </Box>
+            </>
           ) : (
             <Box>
               {mensagemErro && (
-                <Text color="red.500" mb={4}>
+                <Typography 
+                  color="error" 
+                  sx={{ mb: 2 }}
+                >
                   {typeof mensagemErro === 'object' ? mensagemErro.message : mensagemErro}
-                </Text>
+                </Typography>
               )}
             </Box>
           )}
         </Box>
-      </Flex>
+      </Box>
     </Box>
   );
 }

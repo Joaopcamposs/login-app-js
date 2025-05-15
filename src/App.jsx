@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Inicio from './pages/Inicio'
+import { SnackbarProvider } from 'notistack'
 
 export const API_V1_PREFIX = '/api/v1';
 
@@ -17,12 +18,14 @@ const InicioProtegido = () => (isAuthenticated() ? <Inicio/> : <Navigate to="/lo
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login"/>} />
-        <Route path="/login" element={<Login/>}/>
-        <Route path="/inicio/*" element={<InicioProtegido/>} />
-      </Routes>
-    </BrowserRouter>
+    <SnackbarProvider maxSnack={3}>
+  <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login"/>} />
+          <Route path="/login" element={<Login/>}/>
+          <Route path="/inicio/*" element={<InicioProtegido/>} />
+        </Routes>
+      </BrowserRouter>
+    </SnackbarProvider>
   )
 }
