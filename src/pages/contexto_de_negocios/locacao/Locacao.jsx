@@ -16,7 +16,7 @@ export default function Locacao() {
 
   return (
     <div>
-      <h2>Gestão de Locações</h2>
+      <h1>Gestão de Locações</h1>
       <SwitchOperacao value={operacao} onChange={handleChange} />
 
       {operacao === 'consultar' ? <ConsultarLocacao /> : <CadastrarLocacao />}

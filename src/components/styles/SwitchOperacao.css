@@ -1,6 +1,6 @@
 .switch-container {
   display: inline-flex;
-  border: 2px solid #8e44ad;
+  border: 2px solid #b69348ff;
   border-radius: 999px;
   overflow: hidden;
   background-color: #fff;
@@ -13,7 +13,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #8e44ad;
+  color: #b69348ff;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -25,7 +25,7 @@
 }
 
 .switch-button.active {
-  background-color: #8e44ad;
+  background-color: #b69348ff;
   color: #fff;
 }
 
