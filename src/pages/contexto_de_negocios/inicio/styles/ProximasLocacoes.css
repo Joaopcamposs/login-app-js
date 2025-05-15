@@ -49,20 +49,21 @@
   }
   
   .locacoes-table th {
-    background-color: #fbf2e2ff;
+    background-color: #b69348ff;
     font-weight: bold;
+    color: white;
   }
   
   .linha-par {
-    background-color: white;
+    background-color: #fbf2e2ff;
   }
   
   .linha-impar {
-    background-color: #fbf2e2ff;
+    background-color: white;
   }
   
   .locacoes-table tr:hover {
-    background-color: #fbf2e2ff;
+    background-color: rgb(239, 237, 255);
   }
 
   
