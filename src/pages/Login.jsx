@@ -14,7 +14,7 @@ export default function Login() {
     // Simulação de login (substituir por chamada de API)
     if (email && password) {
       localStorage.setItem('token', 'fake-token')
-      navigate('/dashboard')
+      navigate('/inicio')
     } else {
       alert('Preencha todos os campos')
     }
@@ -25,9 +25,9 @@ export default function Login() {
     try {
       const response = await api.post('/login', { email, password })
       saveToken(response.data.token)
-      navigate('/dashboard')
+      navigate('/inicio')
     } catch (err) {
-      alert('Login falhou')
+      alert(`Login falhou: ${err.response.data.message}`)
     }
   }
 

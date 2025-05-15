@@ -1,0 +1,38 @@
+.switch-container {
+  display: inline-flex;
+  border: 2px solid #8e44ad;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.switch-button {
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #8e44ad;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.switch-button svg {
+  font-size: 16px;
+}
+
+.switch-button.active {
+  background-color: #8e44ad;
+  color: #fff;
+}
+
+.switch-button.active svg {
+  color: #fff;
+}
+
+.switch-button:not(.active):hover {
+  background-color: rgba(142, 68, 173, 0.1);
+}

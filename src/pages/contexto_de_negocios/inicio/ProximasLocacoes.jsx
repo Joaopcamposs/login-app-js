@@ -1,37 +1,7 @@
+import './styles/ProximasLocacoes.css'
 import { useEffect, useState } from 'react'
-import './styles/Dashboard.css'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import { api } from '../../../services/api'
 
-const SidebarMenu = () => {
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    navigate('/')
-  }
-
-  return (
-    <div className="sidebar">
-      <div className="menu-items">
-        <div className="menu-item logo-container">
-          <img src="src/pages/styles/templates/favicon-white.png" alt="Logo" className="logo-icon" />
-          <div className="menu-label"></div>
-        </div>
-        <div className="menu-item">🏠<div className="menu-label">Locação</div></div>
-        <div className="menu-item">📄<div className="menu-label">PDF</div></div>
-        <div className="menu-item">👤<div className="menu-label">Clientes</div></div>
-        <div className="menu-item">📦<div className="menu-label">Disponível</div></div>
-        <div className="menu-item">👗<div className="menu-label">Trajes</div></div>
-        <div className="menu-item">🧢<div className="menu-label">Acessórios</div></div>
-        <div className="menu-item">🛠️<div className="menu-label">Usuários</div></div>
-      </div>
-      <div className="logout-button" onClick={handleLogout}>🚪<div className="menu-label">Sair</div></div>
-    </div>
-  )
-}
-
-// Dados fake para fallback
 const dadosFake = [
   {
     cliente: 'João da Silva',
@@ -63,7 +33,7 @@ const dadosFake = [
   }
 ]
 
-export default function Dashboard() {
+export default function ProximasLocacoes() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [locacoes, setLocacoes] = useState([])
@@ -83,7 +53,6 @@ export default function Dashboard() {
         setLoading(true)
         setError(null)
         const response = await api.get('/api/locacoes')
-        // Se a resposta for inválida ou vazia, usa dados fake
         if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
           setLocacoes(dadosFake)
           setError('Exibindo dados falsos temporários')
@@ -91,7 +60,7 @@ export default function Dashboard() {
           setLocacoes(response.data)
         }
       } catch (err) {
-        setError('Não foi possível carregar as locações')
+        setError(`Não foi possível carregar as locações: ${err.response.data.message}`)
         setLocacoes(dadosFake)
       } finally {
         setLoading(false)
@@ -101,13 +70,11 @@ export default function Dashboard() {
     fetchLocacoes()
   }, [])
 
-  // Renderização condicional para diferentes estados
   const renderContent = () => {
     if (loading) {
       return <div className="loading-message">Carregando locações...</div>
     }
 
-    // Garante que locacoes seja um array antes de usar .map
     const locacoesArray = Array.isArray(locacoes) ? locacoes : []
 
     if (locacoesArray.length === 0) {
@@ -155,31 +122,26 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="dashboard">
-      <SidebarMenu />
-      <div className="main-content">
-        <h1>Locações dos próximos dias:</h1>
-
-        <div className="filters">
-          <label>De:
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </label>
-          <label>Até:
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </label>
-          {error && <span className="error-text">* {error}</span>}
-        </div>
-
-        {renderContent()}
+    <div>
+      <h1>Locações dos próximos dias:</h1>
+      <div className="filters">
+        <label>De:
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </label>
+        <label>Até:
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </label>
+        {error && <span className="error-text">* {error}</span>}
       </div>
+      {renderContent()}
     </div>
   )
 }

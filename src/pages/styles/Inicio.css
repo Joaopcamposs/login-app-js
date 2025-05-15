@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.inicio {
+  display: flex;
+  height: 100vh;
+  background-color: #fbf2e2ff;
+  padding: 1%;
+  box-sizing: border-box;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  background-color: rgb(245, 245, 245);
+  margin-left: 24px;
+  border-radius: 16px;
+  padding: 32px;
+  padding-top: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.main-content h1 {
+  margin-bottom: 24px;
+  font-size: 22px;
+  color: #333;
+}
+
