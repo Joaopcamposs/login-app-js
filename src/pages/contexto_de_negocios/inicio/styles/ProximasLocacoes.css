@@ -49,13 +49,13 @@
   }
   
   .locacoes-table th {
-    background-color: #b69348ff;
+    background-color: var(--color-blanca-escuro);
     font-weight: bold;
     color: white;
   }
   
   .linha-par {
-    background-color: #fbf2e2ff;
+    background-color: var(--color-blanca-claro);
   }
   
   .linha-impar {

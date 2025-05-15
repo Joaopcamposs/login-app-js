@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Inicio from './pages/Inicio'
 
+export const API_V1_PREFIX = '/api/v1';
 
 // Função que verifica se o usuário está autenticado
 const isAuthenticated = () => {

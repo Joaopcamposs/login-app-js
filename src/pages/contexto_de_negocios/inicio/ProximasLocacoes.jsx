@@ -123,7 +123,7 @@ export default function ProximasLocacoes() {
 
   return (
     <div>
-      <h1>Locações dos próximos dias:</h1>
+      <h1 style={{ color: 'var(--color-blanca-escuro)' , fontWeight: 'bold'}}>Locações dos próximos dias:</h1>
       <div className="filters">
         <label>De:
           <input

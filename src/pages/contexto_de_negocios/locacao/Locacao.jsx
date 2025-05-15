@@ -16,7 +16,7 @@ export default function Locacao() {
 
   return (
     <div>
-      <h1>Gestão de Locações</h1>
+      <h1 style={{ color: 'var(--color-blanca-escuro)' , fontWeight: 'bold'}}>Gestão de Locações</h1>
       <SwitchOperacao value={operacao} onChange={handleChange} />
 
       {operacao === 'consultar' ? <ConsultarLocacao /> : <CadastrarLocacao />}
