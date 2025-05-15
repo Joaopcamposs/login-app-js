@@ -8,7 +8,7 @@ export default function Locacao() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: '16px' }}>Gestão de Locações</h2>
+      <h1 style={{ marginBottom: '16px' }}>Gestão de Locações</h1>
       <SwitchOperacao value={operacao} onChange={setOperacao} />
 
       <div style={{ marginTop: '24px' }}>
