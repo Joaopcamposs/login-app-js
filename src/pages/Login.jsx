@@ -36,7 +36,7 @@ export default function Login() {
       <div className="login-box">
         <form className="login-form" onSubmit={handleLoginFake}>
           <div className="logo-container">
-            <img src="src/pages/styles/templates/logo_blanca.png" alt="Logo" className="logo" />
+            <img src="/logo_blanca.png" alt="Logo" className="logo" />
           </div>
           <h2>Login</h2>
           <div className="input-group">

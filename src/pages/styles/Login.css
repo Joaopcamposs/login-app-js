@@ -5,7 +5,7 @@ body {
 
 .login-page {
   background: linear-gradient(to bottom, #462362, #7e4982);
-  background-image: url('/src/templates/damas_bkg.png'); 
+  background-image: url('/damas_bkg.png'); 
   background-size: cover;
   background-position: center;
   height: 100vh;

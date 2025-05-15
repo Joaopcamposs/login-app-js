@@ -1,19 +1,25 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import React, { useState } from 'react';
 import SwitchOperacao from '../../../components/SwitchOperacao';
 import ConsultarLocacao from './ConsultarLocacao';
 import CadastrarLocacao from './CadastrarLocacao';
 
 export default function Locacao() {
-  const [operacao, setOperacao] = useState('consultar');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const operacao = location.pathname.split('/')[3] || 'consultar';
+
+  const handleChange = (novoValor) => {
+    navigate(`/inicio/locacao/${novoValor}`);
+  };
 
   return (
     <div>
-      <h1 style={{ marginBottom: '16px' }}>Gestão de Locações</h1>
-      <SwitchOperacao value={operacao} onChange={setOperacao} />
+      <h2>Gestão de Locações</h2>
+      <SwitchOperacao value={operacao} onChange={handleChange} />
 
-      <div style={{ marginTop: '24px' }}>
-        {operacao === 'consultar' ? <ConsultarLocacao /> : <CadastrarLocacao />}
-      </div>
+      {operacao === 'consultar' ? <ConsultarLocacao /> : <CadastrarLocacao />}
     </div>
   );
 }
