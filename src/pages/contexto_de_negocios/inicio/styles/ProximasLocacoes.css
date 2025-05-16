@@ -1,3 +1,9 @@
+:root {
+  --color-blanca-escuro: #b69348ff;
+  --color-blanca-claro: #fbf2e2ff;
+}
+
+
 .filters {
     display: flex;
     gap: 20px;

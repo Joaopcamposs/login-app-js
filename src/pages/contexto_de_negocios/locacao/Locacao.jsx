@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import React from 'react';
 import SwitchOperacao from '../../../components/SwitchOperacao';
 import ConsultarLocacao from './ConsultarLocacao';
+import ConsultarLocacaoAntigo from './ConsultarLocacaoAntigo';
 import CadastrarLocacao from './CadastrarLocacao';
 
 export default function Locacao() {
@@ -19,7 +20,7 @@ export default function Locacao() {
       <h1 style={{ color: 'var(--color-blanca-escuro)' , fontWeight: 'bold'}}>Gestão de Locações</h1>
       <SwitchOperacao value={operacao} onChange={handleChange} />
 
-      {operacao === 'consultar' ? <ConsultarLocacao /> : <CadastrarLocacao />}
+      {operacao === 'consultar' ? <ConsultarLocacaoAntigo /> : <CadastrarLocacao />}
     </div>
   );
 }

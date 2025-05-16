@@ -53,10 +53,12 @@ export default function ConsultarLocacao() {
     valor_restante: '',
     observacoes: '',
     vendedor: '',
+
     codigo_trajes: [],
     descricao_trajes: [],
     tamanho_trajes: [],
     valor_trajes: [],
+
     codigo_acessorios: [],
     descricao_acessorios: [],
     valor_acessorios: [],
@@ -98,13 +100,13 @@ export default function ConsultarLocacao() {
       observacoes: locacao.observacoes || '',
       vendedor: locacao.vendedor || '',
 
-      codigo_trajes: locacao.trajes_locados?.map((traje) => traje.codigo_traje) || [],
+      codigo_trajes: locacao.trajes_locados?.map((traje) => traje.codigo) || [],
       descricao_trajes: locacao.trajes_locados?.map((traje) => traje.descricao) || [],
       tamanho_trajes: locacao.trajes_locados?.map((traje) => traje.tamanho) || [],
       valor_trajes: locacao.trajes_locados?.map((traje) => traje.valor) || [],
 
       codigo_acessorios: locacao.acessorios_locados?.map(
-        (acessorio) => acessorio.codigo_acessorio
+        (acessorio) => acessorio.codigo
       ) || [],
       descricao_acessorios: locacao.acessorios_locados?.map((acessorio) => acessorio.descricao) || [],
       valor_acessorios: locacao.acessorios_locados?.map((acessorio) => acessorio.valor) || [],

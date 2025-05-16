@@ -142,7 +142,7 @@ export default function ConsultarAcessorio() {
   };
 
   return (
-    <div>
+    <div style={{ marginTop: '30px' }}>
       <form onSubmit={handleBuscarAcessorio}>
         <TextField
           label="Código do acessório"

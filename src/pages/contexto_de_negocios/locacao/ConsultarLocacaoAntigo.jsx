@@ -108,13 +108,13 @@ export default function ConsultarLocacao() {
       observacoes: locacao.observacoes || '',
       vendedor: locacao.vendedor || '',
 
-      codigo_trajes: locacao.trajes_locados.map((traje) => traje.codigo_traje),
+      codigo_trajes: locacao.trajes_locados.map((traje) => traje.codigo),
       descricao_trajes: locacao.trajes_locados.map((traje) => traje.descricao),
       tamanho_trajes: locacao.trajes_locados.map((traje) => traje.tamanho),
       valor_trajes: locacao.trajes_locados.map((traje) => traje.valor),
 
       codigo_acessorios: locacao.acessorios_locados.map(
-        (acessorio) => acessorio.codigo_acessorio,
+        (acessorio) => acessorio.codigo,
       ),
       descricao_acessorios: locacao.acessorios_locados.map((acessorio) => acessorio.descricao),
       valor_acessorios: locacao.acessorios_locados.map((acessorio) => acessorio.valor),
@@ -510,7 +510,7 @@ export default function ConsultarLocacao() {
     }, [newTrajesSelecionados, newAcessoriosSelecionados, dep]);
 
   return (
-        <div>
+        <div style={{ marginTop: '30px' }}>
             <div className="inline-container" style={{ display: 'flex' }}>
                 <form onSubmit={handleBuscarPorCodigo}>
                     <TextField

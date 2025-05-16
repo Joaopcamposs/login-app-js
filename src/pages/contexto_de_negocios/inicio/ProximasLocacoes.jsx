@@ -1,78 +1,76 @@
 import './styles/ProximasLocacoes.css'
-import { useEffect, useState } from 'react'
-import { api } from '../../../services/api'
+import React, { useEffect, useState } from 'react';
+import {
+  CircularProgress,
+} from '@mui/material';
+import useAxiosWithTimeout from '../../../services/AxiosWithTimeout'
+import { API_V1_PREFIX } from '../../../App';
+import moment from 'moment';
+import ErrorMessage from '../../../components/ErrorMessage';
 
-const dadosFake = [
-  {
-    cliente: 'João da Silva',
-    dama: 'Maria Oliveira',
-    idade: 25,
-    data_retirada: '2023-01-01',
-    data_evento: '2023-01-05',
-    valor_restante: 1000,
-    observacoes: 'Observações sobre a locação',
-    codigos_trajes: '1234567890',
-    descricao_trajes: 'Descrição dos trajes',
-    tamanhos: 'M, L, XL',
-    codigos_acessorios: '1234567890',
-    descricao_acessorios: 'Descrição dos acessórios',
-  },
-  {
-    cliente: 'Pedro Santos',
-    dama: 'Ana Costa',
-    idade: 28,
-    data_retirada: '2023-01-02',
-    data_evento: '2023-01-06',
-    valor_restante: 1500,
-    observacoes: 'Traje para casamento',
-    codigos_trajes: '9876543210',
-    descricao_trajes: 'Terno completo',
-    tamanhos: 'G, GG',
-    codigos_acessorios: '9876543210',
-    descricao_acessorios: 'Gravata e sapatos',
+
+function obterQuantidadeDeDiasRestantesNaSemana() {
+  // Lógica para calcular a data do próximo domingo com base nos dias restantes
+  const today = new Date();
+  const diasRestantes = 7 - today.getDay(); // Dias restantes até o próximo domingo
+  if (diasRestantes === 7) {
+    return 6;
   }
-]
+  return diasRestantes;
+}
+
 
 export default function ProximasLocacoes() {
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [dataInicial, setDataInicial] = useState(moment().format('YYYY-MM-DD'));
+  const [dataFinal, setDataFinal] = useState(moment().add(obterQuantidadeDeDiasRestantesNaSemana(), 'days').format('YYYY-MM-DD'));
   const [locacoes, setLocacoes] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [isLoadingBusca, setIsLoadingBusca] = useState(false);
+  const [locacaoEncontrado, setLocacaoEncontrado] = useState(undefined);
+  const [mensagemErro, setMensagemErro] = useState('');
+
+
+  const { makeRequest } = useAxiosWithTimeout();
+
+
+  const buscarLocacoes = async () => {
+    try {
+      setIsLoadingBusca(true)
+      const response = await makeRequest({
+        url: `${API_V1_PREFIX}/locacoes_completas?data_inicial=${dataInicial}&data_final=${dataFinal}`,
+        method: 'GET',
+      });
+      if (response.status === 200 && response.data) {
+        setLocacaoEncontrado(true);
+        setLocacoes(response.data);
+      }
+    } catch (erro) {
+      setMensagemErro(erro);
+      setLocacaoEncontrado(false);
+    } finally {
+      setIsLoadingBusca(false)
+    }
+  }
+
+
+  function formatarData(dataISO) {
+    const data = new Date(dataISO);
+    data.setHours(data.getHours() + data.getTimezoneOffset() / 60);
+    // Ajuste a hora para considerar a diferença de fuso horário
+    const dia = (`0${data.getDate()}`).slice(-2);
+    const mes = (`0${data.getMonth() + 1}`).slice(-2);
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
 
   useEffect(() => {
-    const today = new Date()
-    const sunday = new Date()
-    sunday.setDate(today.getDate() + (7 - today.getDay()))
-
-    setStartDate(today.toISOString().slice(0, 10))
-    setEndDate(sunday.toISOString().slice(0, 10))
-
-    const fetchLocacoes = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await api.get('/api/locacoes')
-        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-          setLocacoes(dadosFake)
-          setError('Exibindo dados falsos temporários')
-        } else {
-          setLocacoes(response.data)
-        }
-      } catch (err) {
-        setError(`Não foi possível carregar as locações: ${err.response.data.message}`)
-        setLocacoes(dadosFake)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLocacoes()
-  }, [])
+    buscarLocacoes();
+  }, [dataInicial, dataFinal]);
 
   const renderContent = () => {
-    if (loading) {
-      return <div className="loading-message">Carregando locações...</div>
+    if (isLoadingBusca) {
+      return <div className="loading-message"><CircularProgress
+      style={{ position: 'absolute', top: '50%', left: '50%' }}
+    /></div>
     }
 
     const locacoesArray = Array.isArray(locacoes) ? locacoes : []
@@ -100,20 +98,30 @@ export default function ProximasLocacoes() {
           </tr>
         </thead>
         <tbody>
-          {locacoesArray.map((item, idx) => (
+          {locacoesArray.map((locacao, idx) => (
             <tr key={idx} className={idx % 2 === 0 ? 'linha-par' : 'linha-impar'}>
-              <td>{item.cliente}</td>
-              <td>{item.dama}</td>
-              <td>{item.idade}</td>
-              <td>{item.data_retirada}</td>
-              <td>{item.data_evento}</td>
-              <td>{item.valor_restante}</td>
-              <td>{item.observacoes}</td>
-              <td>{item.codigos_trajes}</td>
-              <td>{item.descricao_trajes}</td>
-              <td>{item.tamanhos}</td>
-              <td>{item.codigos_acessorios}</td>
-              <td>{item.descricao_acessorios}</td>
+              <td>{locacao.nome_cliente}</td>
+              <td>{locacao.nome_dama}</td>
+              <td>{locacao.idade}</td>
+              <td>{formatarData(locacao.data_retirada)}</td>
+              <td>{formatarData(locacao.data_evento)}</td>
+              <td>{locacao.valor_restante}</td>
+              <td>{locacao.observacoes}</td>
+              <td>{locacao.trajes_locados.map(
+                      (traje) => traje.codigo
+                    ).join("; ")}</td>
+              <td>{locacao.trajes_locados.map(
+                      (traje) => traje.descricao
+                    ).join("; ")}</td>
+              <td>{locacao.trajes_locados.map(
+                      (traje) => traje.tamanho
+                    ).join("; ")}</td>
+              <td>{locacao.acessorios_locados.map(
+                      (acessorio) => acessorio.codigo
+                    ).join("; ")}</td>
+              <td>{locacao.acessorios_locados.map(
+                      (acessorio) => acessorio.descricao
+                    ).join("; ")}</td>
             </tr>
           ))}
         </tbody>
@@ -128,18 +136,18 @@ export default function ProximasLocacoes() {
         <label>De:
           <input
             type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={dataInicial}
+            onChange={(e) => setDataInicial(e.target.value)}
           />
         </label>
         <label>Até:
           <input
             type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            value={dataFinal}
+            onChange={(e) => setDataFinal(e.target.value)}
           />
         </label>
-        {error && <span className="error-text">* {error}</span>}
+        {mensagemErro && <ErrorMessage message={mensagemErro} />}
       </div>
       {renderContent()}
     </div>

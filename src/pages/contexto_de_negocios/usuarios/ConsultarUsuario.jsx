@@ -162,7 +162,7 @@ export default function ConsultarUsuario() {
   };
 
   return (
-    <div>
+    <div style={{ marginTop: '30px' }}>
       <form onSubmit={handleBuscar}>
         <TextField
           label="Email do usuario"

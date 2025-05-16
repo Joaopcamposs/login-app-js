@@ -7,7 +7,7 @@ import axios from 'axios';
 export const API_V1_PREFIX = '/api/v1';
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
-axios.defaults.timeout = 30000; // Timeout de 30 segundos
+axios.defaults.timeout = 30000; // Timeout de 60 segundos
 
 axios.interceptors.request.use(
   (config) => {
