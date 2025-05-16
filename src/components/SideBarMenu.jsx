@@ -1,5 +1,5 @@
 import './styles/SideBarMenu.css'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function SidebarMenu() {
   const navigate = useNavigate()
@@ -12,9 +12,14 @@ export default function SidebarMenu() {
   const handleClick = (entidade) => {
     if (entidade === 'inicio') {
       navigate(`/inicio`);
-    } else {
-      navigate(`/inicio/${entidade}/consultar`);
-    }// sempre começa em consultar
+    } else if (entidade === 'contrato') {
+      navigate(`/inicio/contrato/`);
+    } else if (entidade === 'disponibilidades') {
+      navigate(`/inicio/disponibilidades/`);
+    } 
+    else {
+      navigate(`/inicio/${entidade}/consultar`);  // sempre começa em consultar
+    }
   };
 
   return (
@@ -25,13 +30,13 @@ export default function SidebarMenu() {
           <div className="menu-label"></div>
         </div>
         <div className="menu-item" onClick={() => handleClick('inicio')}>📅<div className="menu-label">Início</div></div>
-        <div className="menu-item" onClick={() => handleClick('locacao')}>🏠<div className="menu-label">Locação</div></div>
-        <div className="menu-item" onClick={() => handleClick('pdf_contrato')}>📄<div className="menu-label">PDF</div></div>
-        <div className="menu-item" onClick={() => setEntidade('cliente')}>👤<div className="menu-label">Clientes</div></div>
-        <div className="menu-item" onClick={() => setEntidade('disponibilidade')}>📦<div className="menu-label">Disponível</div></div>
-        <div className="menu-item" onClick={() => setEntidade('traje')}>👗<div className="menu-label">Trajes</div></div>
-        <div className="menu-item" onClick={() => setEntidade('acessorio')}>🧢<div className="menu-label">Acessórios</div></div>
-        <div className="menu-item" onClick={() => setEntidade('usuario')}>🛠️<div className="menu-label">Usuários</div></div>
+        <div className="menu-item" onClick={() => handleClick('locacao')}>✒️<div className="menu-label">Locação</div></div>
+        <div className="menu-item" onClick={() => handleClick('contrato')}>📄<div className="menu-label">Contrato</div></div>
+        <div className="menu-item" onClick={() => handleClick('clientes')}>👤<div className="menu-label">Clientes</div></div>
+        <div className="menu-item" onClick={() => handleClick('disponibilidades')}>✅<div className="menu-label">Disponível</div></div>
+        <div className="menu-item" onClick={() => handleClick('trajes')}>👗<div className="menu-label">Trajes</div></div>
+        <div className="menu-item" onClick={() => handleClick('acessorios')}>🧢<div className="menu-label">Acessórios</div></div>
+        <div className="menu-item" onClick={() => handleClick('usuarios')}>👨‍💼<div className="menu-label">Usuários</div></div>
       </div>
       <div className="logout-button" onClick={handleLogout}>🚪<div className="menu-label">Sair</div></div>
     </div>

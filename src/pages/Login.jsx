@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
-import { saveToken } from '../utils/auth'
 import './styles/Login.css'
 
 export default function Login() {
@@ -17,17 +15,6 @@ export default function Login() {
       navigate('/inicio')
     } else {
       alert('Preencha todos os campos')
-    }
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault()
-    try {
-      const response = await api.post('/login', { email, password })
-      saveToken(response.data.token)
-      navigate('/inicio')
-    } catch (err) {
-      alert(`Login falhou: ${err.response.data.message}`)
     }
   }
 

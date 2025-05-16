@@ -1,13 +1,5 @@
-import { useState, useEffect } from 'react'
-import moment from 'moment/moment'
-import { API_V1_PREFIX } from '../../../App'
-import useAxiosWithTimeout from '../../../services/AxiosWithTimeout'
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Stack,
-  Snackbar,
-  Alert,
-  Divider,
   Button,
   Grid,
   TextField,
@@ -21,25 +13,33 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material'
-import { SnackbarProvider, useSnackbar } from 'notistack'
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import moment from 'moment/moment';
+import useAxiosWithTimeout from '../../../services/AxiosWithTimeout'
+import { API_V1_PREFIX } from '../../../App';
+import ErrorMessage from '../../../components/ErrorMessage';
+import SuccessMessage from '../../../components/SuccessMessage';
 
 export default function ConsultarLocacao() {
-  const [isLoadingBusca, setIsLoadingBusca] = useState(false)
-  const [isLoadingAtt, setIsLoadingAtt] = useState(false)
-  const [isLoadingDel, setIsLoadingDel] = useState(false)
-  const [locacaoEncontrado, setLocacaoEncontrado] = useState(undefined)
-  const [locacaoAtualizado, setLocacaoAtualizado] = useState(undefined)
-  const [locacaoDeletado, setLocacaoDeletado] = useState(undefined)
-  const [mensagemErro, setMensagemErro] = useState('')
-  const [mensagemSucesso, setMensagemSucesso] = useState('')
-  const [codigoLocacao, setCodigoLocacao] = useState('')
-  const [cpfCliente, setCpf] = useState('')
-  const [clientes, setClientes] = useState([{ nome: '' }])
-  const [usuarios, setUsuarios] = useState([])
-  const [trajes, setTrajes] = useState([])
-  const [acessorios, setAcessorios] = useState([])
-  const [nomeCliente, setNomeCliente] = useState(undefined)
+  const [isLoadingBusca, setIsLoadingBusca] = useState(false);
+  const [isLoadingAtt, setIsLoadingAtt] = useState(false);
+  const [isLoadingDel, setIsLoadingDel] = useState(false);
+  const [isAttChecked, setIsAttChecked] = useState(false);
+  const [isDelChecked, setIsDelChecked] = useState(false);
+  const [locacaoEncontrado, setLocacaoEncontrado] = useState(undefined);
+  const [locacaoAtualizado, setLocacaoAtualizado] = useState(undefined);
+  const [locacaoDeletado, setLocacaoDeletado] = useState(undefined);
+  const [mensagemErro, setMensagemErro] = useState('');
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const [flagSucesso, setFlagSucesso] = useState(false);
+  const [codigoLocacao, setCodigoLocacao] = useState('');
+  const [cpfCliente, setCpf] = useState('');
+  const [clientes, setClientes] = useState([{ nome: '' }]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [trajes, setTrajes] = useState([]);
+  const [acessorios, setAcessorios] = useState([]);
+  const [nomeCliente, setNomeCliente] = useState(undefined);
   const [formValues, setFormValues] = useState({
     nome_cliente: '',
     nome_dama: '',
@@ -47,9 +47,9 @@ export default function ConsultarLocacao() {
     idade: '',
     cpf: '',
     data_venda: undefined,
-    data_evento: undefined,
-    data_retirada: undefined,
-    data_devolucao: undefined,
+    data_evento: '',
+    data_retirada: '',
+    data_devolucao: '',
     valor_total: '',
     valor_desconto: 0,
     valor_final: '',
@@ -57,16 +57,17 @@ export default function ConsultarLocacao() {
     valor_restante: '',
     observacoes: '',
     vendedor: '',
+
     codigo_trajes: [],
     descricao_trajes: [],
     tamanho_trajes: [],
     valor_trajes: [],
+
     codigo_acessorios: [],
     descricao_acessorios: [],
     valor_acessorios: [],
-  })
+  });
 
-  
   const [trajeSelecionado, setTrajeSelecionado] = useState({});
   const [trajesSelecionados, setTrajesSelecionados] = useState([]);
   const [newTrajesSelecionados] = useState([]);
@@ -74,13 +75,18 @@ export default function ConsultarLocacao() {
   const [acessorioSelecionado, setAcessorioSelecionado] = useState({});
   const [acessoriosSelecionados, setAcessoriosSelecionados] = useState([]);
   const [newAcessoriosSelecionados] = useState([]);
-  
+
   const [dep, setDep] = useState();
   const { makeRequest } = useAxiosWithTimeout();
-  const { enqueueSnackbar } = useSnackbar();
+
+  function resetarCheckbox() {
+    setIsAttChecked(false);
+    setIsDelChecked(false);
+  }
 
   function limparCampos() {
     setCodigoLocacao('');
+    resetarCheckbox();
   }
 
   async function preencherForms(locacao) {
@@ -91,9 +97,9 @@ export default function ConsultarLocacao() {
       idade: locacao.idade || '',
       cpf: locacao.cpf || '',
       data_venda: locacao.data_venda || undefined,
-      data_evento: locacao.data_evento || undefined,
-      data_retirada: locacao.data_retirada || undefined,
-      data_devolucao: locacao.data_devolucao || undefined,
+      data_evento: locacao.data_evento || '',
+      data_retirada: locacao.data_retirada || '',
+      data_devolucao: locacao.data_devolucao || '',
       valor_total: locacao.valor_total || '',
       valor_desconto: locacao.valor_desconto || 0,
       valor_final: locacao.valor_final || '',
@@ -102,20 +108,19 @@ export default function ConsultarLocacao() {
       observacoes: locacao.observacoes || '',
       vendedor: locacao.vendedor || '',
 
-      codigo_trajes: locacao.trajes_locados?.map((traje) => traje.codigo_traje) || [],
-      descricao_trajes: locacao.trajes_locados?.map((traje) => traje.descricao) || [],
-      tamanho_trajes: locacao.trajes_locados?.map((traje) => traje.tamanho) || [],
-      valor_trajes: locacao.trajes_locados?.map((traje) => traje.valor) || [],
+      codigo_trajes: locacao.trajes_locados.map((traje) => traje.codigo_traje),
+      descricao_trajes: locacao.trajes_locados.map((traje) => traje.descricao),
+      tamanho_trajes: locacao.trajes_locados.map((traje) => traje.tamanho),
+      valor_trajes: locacao.trajes_locados.map((traje) => traje.valor),
 
-      codigo_acessorios: locacao.acessorios_locados?.map(
-        (acessorio) => acessorio.codigo_acessorio
-      ) || [],
-      descricao_acessorios: locacao.acessorios_locados?.map((acessorio) => acessorio.descricao) || [],
-      valor_acessorios: locacao.acessorios_locados?.map((acessorio) => acessorio.valor) || [],
+      codigo_acessorios: locacao.acessorios_locados.map(
+        (acessorio) => acessorio.codigo_acessorio,
+      ),
+      descricao_acessorios: locacao.acessorios_locados.map((acessorio) => acessorio.descricao),
+      valor_acessorios: locacao.acessorios_locados.map((acessorio) => acessorio.valor),
     });
   }
 
-  // Handlers
   const buscarClientes = async () => {
     try {
       const response = await makeRequest({
@@ -130,11 +135,6 @@ export default function ConsultarLocacao() {
       }
     } catch (erro) {
       setMensagemErro(erro);
-      // Para mostrar uma notificação: Variantes disponíveis: 'default', 'success', 'error', 'warning', 'info'
-      enqueueSnackbar('Mensagem de sucesso!', { 
-        variant: 'error',
-        autoHideDuration: 3000,
-      });
     }
   };
   const buscarUsuarios = async () => {
@@ -185,6 +185,7 @@ export default function ConsultarLocacao() {
       setMensagemErro(erro);
     }
   };
+
   const handleBuscarPorCodigo = async (event) => {
     event.preventDefault();
     setIsLoadingBusca(true);
@@ -199,6 +200,7 @@ export default function ConsultarLocacao() {
         setLocacaoEncontrado(true);
         setLocacaoAtualizado(false); // reiniciar flag
         setLocacaoDeletado(false); // reiniciar flag
+        resetarCheckbox();
         await preencherForms(response.data[0]);
       }
     } catch (erro) {
@@ -208,6 +210,7 @@ export default function ConsultarLocacao() {
       setIsLoadingBusca(false);
     }
   };
+
   const handleBuscarPorCPF = async (event) => {
     event.preventDefault();
     setIsLoadingBusca(true);
@@ -222,6 +225,7 @@ export default function ConsultarLocacao() {
         setLocacaoEncontrado(true);
         setLocacaoAtualizado(false); // reiniciar flag
         setLocacaoDeletado(false); // reiniciar flag
+        resetarCheckbox();
         await preencherForms(response.data[0]);
         setCodigoLocacao(response.data[0].codigo);
       }
@@ -232,6 +236,7 @@ export default function ConsultarLocacao() {
       setIsLoadingBusca(false);
     }
   };
+
   const handleBuscarTodasPorCPF = async (event) => {
     event.preventDefault();
     setIsLoadingBusca(true);
@@ -246,6 +251,7 @@ export default function ConsultarLocacao() {
         setLocacaoEncontrado(false);
         setLocacaoAtualizado(false); // reiniciar flag
         setLocacaoDeletado(false); // reiniciar flag
+        resetarCheckbox();
         let codigosLocados = '';
         response.data.forEach((locacao) => {
           codigosLocados += `${locacao.codigo}, `;
@@ -266,6 +272,7 @@ export default function ConsultarLocacao() {
       setIsLoadingBusca(false);
     }
   };
+
   const handleAtualizarLocacao = async () => {
     setIsLoadingAtt(true);
 
@@ -279,7 +286,9 @@ export default function ConsultarLocacao() {
       if (response.status === 200 && response.data) {
         setLocacaoEncontrado(true);
         setLocacaoAtualizado(true);
+        setFlagSucesso(true);
         setMensagemSucesso('Locação atualizada com sucesso!');
+        resetarCheckbox();
         await preencherForms(
           response.data,
         );
@@ -293,6 +302,7 @@ export default function ConsultarLocacao() {
       setIsLoadingAtt(false);
     }
   };
+
   const handleDeletarLocacao = async () => {
     setIsLoadingDel(true);
 
@@ -306,6 +316,7 @@ export default function ConsultarLocacao() {
         setLocacaoEncontrado(false); // flag invertida, deletar componentes
         setLocacaoDeletado(true);
         setMensagemErro('');
+        setFlagSucesso(true);
         setMensagemSucesso('Locacao deletada com sucesso!');
         limparCampos();
       }
@@ -317,6 +328,59 @@ export default function ConsultarLocacao() {
     }
 
     setIsLoadingDel(false);
+  };
+
+  const handleCheckboxAttChange = (event) => {
+    setIsAttChecked(event.target.checked);
+  };
+
+  const handleCheckboxDelChange = (event) => {
+    setIsDelChecked(event.target.checked);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  };
+
+  const handleClose = () => {
+    setFlagSucesso(false);
+  };
+
+  const handleAutocompleteChange = (event, newValue) => {
+    setNomeCliente(newValue);
+    const selectedClient = clientes.find((client) => client.nome === newValue.nome);
+    setCpf(selectedClient.cpf);
+  };
+
+  const atualizarValores = () => {
+    const valorTrajes = formValues.valor_trajes.reduce(
+      (acc, cur) => acc + cur,
+      0,
+    );
+    const valorAcessorios = formValues.valor_acessorios.reduce(
+      (acc, cur) => acc + cur,
+      0,
+    );
+    const valorTotal = valorTrajes + valorAcessorios;
+    const valorFinal = valorTotal - formValues.valor_desconto;
+    const valorRestante = valorFinal - formValues.valor_entrada;
+
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      valor_total: valorTotal,
+    }));
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      valor_final: valorFinal,
+    }));
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      valor_restante: valorRestante,
+    }));
   };
 
   const handleUpdateFormsTrajes = (newTraje, shouldAdd) => {
@@ -369,7 +433,6 @@ export default function ConsultarLocacao() {
       newFormValues.descricao_acessorios.push(newAcessorio.descricao);
       newFormValues.valor_acessorios.push(newAcessorio.valor);
     } else {
-      // eslint-disable-next-line
       const index = newAcessorio; // no else, o newAcessorio é o index do array
       newFormValues.codigo_acessorios.splice(index, 1);
       newFormValues.descricao_acessorios.splice(index, 1);
@@ -437,667 +500,586 @@ export default function ConsultarLocacao() {
     }));
   };
 
-  const handleAutocompleteChange = (event) => {
-    const newValue = event.target.value;
-    setNomeCliente(newValue);
-    
-    // Encontra o cliente selecionado
-    const selectedClient = clientes.find((client) => client.nome === newValue);
-    
-    // Verifica se encontrou um cliente antes de tentar acessar o CPF
-    if (selectedClient) {
-      setCpf(selectedClient.cpf);
-    } else {
-      setCpf(''); // Limpa o CPF se não encontrar o cliente
-    }
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-  };
-
-  // Componente de busca
-  const BuscaForm = () => (
-    <Box sx={{ width: 220, maxWidth: '220px', marginLeft: '-30px' }}>
-      <Stack spacing={5} mb={4}>
-        {/* Buscar por Código */}
-        <form onSubmit={handleBuscarPorCodigo}>
-          <Stack spacing={2}>
-            <TextField
-              label="Código da Locação"
-              type="number"
-              value={codigoLocacao}
-              onChange={(e) => setCodigoLocacao(e.target.value)}
-              required
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isLoadingBusca}
-              fullWidth
-              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
-              sx={{
-                color: 'white',
-              }}
-            >
-              Buscar por Código
-            </Button>
-          </Stack>
-        </form>
-  
-        {/* Buscar por CPF */}
-        <form onSubmit={handleBuscarPorCPF}>
-          <Stack spacing={2}>
-            <TextField
-              label="CPF do Cliente"
-              type="tel"
-              value={cpfCliente}
-              onChange={(e) => setCpf(e.target.value)}
-              required
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isLoadingBusca}
-              fullWidth
-              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
-              sx={{
-                color: 'white',
-              }}
-            >
-              Buscar por CPF
-            </Button>
-          </Stack>
-        </form>
-  
-        {/* Buscar múltiplas locações por CPF */}
-        <form onSubmit={handleBuscarTodasPorCPF}>
-          <Stack spacing={2}>
-            <TextField
-              select
-              label="Nome do Cliente"
-              value={nomeCliente || ''}
-              onChange={handleAutocompleteChange}
-              required
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            >
-              {clientes.map((cliente) => (
-                <MenuItem key={cliente.id} value={cliente.nome}>
-                  {cliente.nome}
-                </MenuItem>
-              ))}
-            </TextField>
-  
-            <TextField
-              label="CPF do Cliente"
-              type="tel"
-              value={cpfCliente}
-              onChange={(e) => setCpf(e.target.value)}
-              required
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-  
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isLoadingBusca}
-              fullWidth
-              startIcon={isLoadingBusca ? <CircularProgress size={20} /> : null}
-              sx={{
-                color: 'white',
-                height: '36px', // Altura fixa do botão
-                fontSize: '0.8rem', // Tamanho da fonte menor
-                whiteSpace: 'nowrap', // Evita quebra de linha
-                overflow: 'hidden', // Esconde o conteúdo que exceder
-                textOverflow: 'ellipsis', // Adiciona ... quando o texto é muito longo
-                minWidth: 'unset', // Remove a largura mínima padrão
-                px: 2, // Padding horizontal
-              }}
-            >
-              Listar Códigos por CPF
-            </Button>
-          </Stack>
-        </form>
-      </Stack>
-    </Box>
-  );
-
-  // Componente de formulário principal
-  const FormularioLocacao = () => (
-    <Grid container spacing={2} direction="column" width="220px">
-      <Grid item xs={4}>
-      <Typography variant="h6" >
-          Locação
-      </Typography>
-      </Grid>
-      <Grid item xs={12} >
-        <TextField
-            name="nome_cliente"
-            label="Nome do Cliente"
-            value={formValues.nome_cliente}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-            required
-        />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="nome_dama"
-              label="Nome da Dama"
-              value={formValues.nome_dama}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="nome_noiva"
-              label="Nome da Noiva"
-              value={formValues.nome_noiva}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="idade"
-              label="Idade"
-              type="number"
-              value={formValues.idade}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="cpf"
-              label="CPF"
-              type="tel"
-              value={formValues.cpf}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="data_venda"
-              label="Data da Venda"
-              type="date"
-              value={formValues.data_venda}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="data_evento"
-              label="Data do Evento"
-              type="date"
-              value={formValues.data_evento}
-              onChange={handleChangeDataEvento}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="data_retirada"
-              label="Data da Retirada"
-              type="date"
-              value={formValues.data_retirada}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="data_devolucao"
-              label="Data da Devolução"
-              type="date"
-              value={formValues.data_devolucao}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="valor_total"
-              label="Valor Total"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                      <InputAdornment position="start">R$</InputAdornment>
-                ),
-              }}
-              value={formValues.valor_total}
-              onChange={(event) => {
-                handleChange(event);
-                setDep((prevDep) => !prevDep);
-              }}
-              disabled
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="valor_desconto"
-              label="Valor do Desconto"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                      <InputAdornment position="start">R$</InputAdornment>
-                ),
-              }}
-              value={formValues.valor_desconto}
-              onChange={(event) => {
-                handleChange(event);
-                setDep((prevDep) => !prevDep);
-              }}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="valor_final"
-              label="Valor Final"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                      <InputAdornment position="start">R$</InputAdornment>
-                ),
-              }}
-              value={formValues.valor_final}
-              onChange={(event) => {
-                handleChange(event);
-                setDep((prevDep) => !prevDep);
-              }}
-              disabled
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="valor_entrada"
-              label="Valor da Entrada"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                      <InputAdornment position="start">R$</InputAdornment>
-                ),
-              }}
-              value={formValues.valor_entrada}
-              onChange={(event) => {
-                handleChange(event);
-                setDep((prevDep) => !prevDep);
-              }}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="valor_restante"
-              label="Valor Restante"
-              type="number"
-              InputProps={{
-                startAdornment: (
-                      <InputAdornment position="start">R$</InputAdornment>
-                ),
-              }}
-              value={formValues.valor_restante}
-              onChange={(event) => {
-                handleChange(event);
-                setDep((prevDep) => !prevDep);
-              }}
-              disabled
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <TextField
-              name="observacoes"
-              label="Observações"
-              value={formValues.observacoes}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              multiline
-              rows={4}
-              inputProps={{ maxLength: 250 }}
-          />
-      </Grid>
-      <Grid item xs={12} >
-          <FormControl fullWidth>
-              <InputLabel id="vendedor-select-label">Vendedor</InputLabel>
-              <Select
-                  MenuProps={{ style: { maxHeight: 300 } }}
-                  labelId="vendedor-select-label"
-                  id="vendedor-select"
-                  name="vendedor"
-                  value={formValues.vendedor}
-                  onChange={handleChange}
-                  required
-              >
-                  {usuarios.map((usuario) => (
-                      <MenuItem key={usuario.nome} value={usuario.nome}>
-                          {usuario.nome}
-                      </MenuItem>
-                  ))}
-              </Select>
-          </FormControl>
-          <Grid item xs={12} style={{ marginTop: '32px' }}>
-              <Button
-                  variant="contained"
-                  onClick={handleAtualizarLocacao}
-                  color="success"
-                  fullWidth
-              >
-                  {isLoadingAtt ? 'Atualizando...' : 'Atualizar'}
-              </Button>
-          </Grid>
-          <Grid item xs={12} style={{ marginTop: '32px' }}>
-              <Button
-                  variant="contained"
-                  onClick={handleDeletarLocacao}
-                  color="error"
-                  fullWidth
-              >
-                  {isLoadingDel ? 'Deletando...' : 'Deletar'}
-              </Button>
-          </Grid>
-
-      </Grid>
-
-      {/* Componentes de Trajes e Acessórios aqui */}
-    </Grid>
-  );
-
-  const FormularioTrajes = () => (
-    <Grid container spacing={2} direction="column" width="220px" >
-      <Grid item xs={3}>
-        <Typography variant="h6" >
-            Trajes Locados
-        </Typography>
-        <FormControl fullWidth style={{ marginTop: '16px' }}>
-            <InputLabel id="trajes-select-label">Trajes</InputLabel>
-            <Select
-                MenuProps={{ style: { maxHeight: 300 } }}
-                labelId="trajes-select-label"
-                id="trajes-select"
-                value={trajeSelecionado.codigo || ''}
-                onChange={handleTrajeSelecionadoChange}
-            >
-                {trajes.map((traje) => (
-                    <MenuItem key={traje.codigo} value={traje.codigo}>
-                        {traje.codigo}
-                    </MenuItem>
-                ))}
-            </Select>
-        </FormControl>
-        <div
-            style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-            }}
-        >
-            {formValues.codigo_trajes.map((codigo, index) => (
-                <div
-                    key={`traje-${index}`}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      marginBottom: '10px',
-                      marginTop: '10px',
-                    }}
-                >
-                    <TextField
-                        name="codigo_traje"
-                        label="Código"
-                        disabled={false}
-                        value={formValues.codigo_trajes[index]}
-                        onChange={(e) => {
-                          const newValue = formValues.codigo_trajes.slice();
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            codigo_trajes: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        name="tamanho_traje"
-                        label="Tamanho"
-                        disabled={false}
-                        value={formValues.tamanho_trajes[index]}
-                        onChange={(e) => {
-                          const newValue = formValues.tamanho_trajes.slice();
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            tamanho_trajes: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                        
-                    />
-                    <TextField
-                        name="descricao_traje"
-                        label="Descrição"
-                        disabled={false}
-                        value={formValues.descricao_trajes[index]}
-                        onChange={(e) => {
-                          const newValue = formValues.descricao_trajes.slice();
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            descricao_trajes: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                        
-                    />
-                    <TextField
-                        name="valor_traje"
-                        label="Valor"
-                        disabled={false}
-                        value={formValues.valor_trajes[index]}
-                        onChange={(e) => {
-                          const newValue = formValues.valor_trajes.slice();
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            valor_trajes: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                        
-                    />
-                    <IconButton onClick={() => handleTrajeRemovido(index)}>
-                        <DeleteIcon/>
-                    </IconButton>
-                </div>
-            ))}
-        </div>
-      </Grid>
-    </Grid>
-  );
-
-  const FormularioAcessorios = () => (
-    <Grid container spacing={2} direction="column" width="220px" >
-      <Grid item xs={3}>
-        <Typography variant="h6" >
-            Acessórios Locados
-        </Typography>
-        <FormControl fullWidth style={{ marginTop: '16px' }}>
-            <InputLabel id="acessorios-select-label">
-                Acessórios
-            </InputLabel>
-            <Select
-                MenuProps={{ style: { maxHeight: 300 } }}
-                labelId="acessorios-select-label"
-                id="acessorios-select"
-                value={acessorioSelecionado.codigo || ''}
-                onChange={handleAcessorioSelecionadoChange}
-            >
-                {acessorios.map((acessorio) => (
-                    <MenuItem key={acessorio.codigo} value={acessorio.codigo}>
-                        {acessorio.codigo}
-                    </MenuItem>
-                ))}
-            </Select>
-        </FormControl>
-        <div
-            style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-            }}
-        >
-            {formValues.codigo_acessorios.map((codigo, index) => (
-                <div
-                    key={`acessorio-${index}`}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      marginBottom: '10px',
-                      marginTop: '10px',
-                    }}
-                >
-                    <TextField
-                        name="codigo_acessorio"
-                        label="Código"
-                        disabled={false}
-                        value={formValues.codigo_acessorios[index]}
-                        onChange={(e) => {
-                          const newValue = Array.from(formValues.codigo_acessorios);
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            codigo_acessorios: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        name="descricao_acessorio"
-                        label="Descrição"
-                        disabled={false}
-                        value={formValues.descricao_acessorios[index]}
-                        onChange={(e) => {
-                          const newValue = Array.from(
-                            formValues.descricao_acessorios,
-                          );
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            descricao_acessorios: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                        
-                    />
-                    <TextField
-                        name="valor_acessorio"
-                        label="Valor"
-                        disabled={false}
-                        value={formValues.valor_acessorios[index]}
-                        onChange={(e) => {
-                          const newValue = Array.from(formValues.valor_acessorios);
-                          newValue[index] = e.target.value;
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            valor_acessorios: newValue,
-                          }));
-                        }}
-                        InputLabelProps={{ shrink: true }}
-                        
-                    />
-                    <IconButton onClick={() => handleAcessorioRemovido(index)}>
-                        <DeleteIcon/>
-                    </IconButton>
-                </div>
-            ))}
-        </div>
-    </Grid>
-    </Grid>
-  )
+  useEffect(() => {
+    buscarClientes();
+    buscarUsuarios();
+    buscarTrajes();
+    buscarAcessorios();
+    atualizarValores();
+    // eslint-disable-next-line
+    }, [newTrajesSelecionados, newAcessoriosSelecionados, dep]);
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ display: 'flex', gap: 6 }}>
-        <Box>
-          <BuscaForm />
-        </Box>
+        <div>
+            <div className="inline-container" style={{ display: 'flex' }}>
+                <form onSubmit={handleBuscarPorCodigo}>
+                    <TextField
+                        label="Codigo da locação"
+                        type="number"
+                        value={codigoLocacao}
+                        onChange={(e) => setCodigoLocacao(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        required
+                    />
+                    <Button type="submit" variant="contained" disabled={isLoadingBusca}>
+                        {isLoadingBusca ? <CircularProgress size={24}/> : 'Buscar por Codigo'}
+                    </Button>
+                </form>
+                <form onSubmit={handleBuscarPorCPF} style={{ marginBottom: '16px', marginLeft: '20px' }}>
+                    <TextField
+                        label="CPF do Cliente"
+                        type="tel"
+                        value={cpfCliente}
+                        onChange={(e) => setCpf(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        autoFocus
+                        required
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={isLoadingBusca}
+                    >
+                        {isLoadingBusca ? <CircularProgress size={24}/> : 'Buscar por CPF'}
+                    </Button>
+                </form>
+                <form style={{ marginBottom: '16px', marginLeft: '20px' }}>
+                    <Autocomplete
+                        options={clientes}
+                        getOptionLabel={(option) => option.nome}
+                        value={nomeCliente}
+                        onChange={handleAutocompleteChange}
+                        renderInput={(params) => <TextField {...params} label="Nome do Cliente"/>}
+                        required
+                        style={{ width: 340 }}
+                    />
+                </form>
+                <form onSubmit={handleBuscarTodasPorCPF} style={{ marginBottom: '16px', marginLeft: '20px' }}>
+                    <TextField
+                        label="CPF do Cliente"
+                        type="tel"
+                        value={cpfCliente}
+                        onChange={(e) => setCpf(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        autoFocus
+                        required
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={isLoadingBusca}
+                    >
+                        {isLoadingBusca ? <CircularProgress size={24}/> : 'Lista Codigos por CPF'}
+                    </Button>
+                </form>
+            </div>
 
-        <Divider 
-          orientation="vertical" 
-          flexItem 
-          sx={{ 
-            borderColor: 'grey.300',
-            height: 'auto'
-          }} 
-        />
+            {locacaoEncontrado === undefined ? (
+                <div></div>
+            ) : locacaoEncontrado ? (
+                <Grid container spacing={3}>
+                    <Grid item xs={4}>
+                        <Typography variant="h6" style={{ marginTop: '16px' }}>
+                            Locação
+                        </Typography>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="nome_cliente"
+                                label="Nome do Cliente"
+                                value={formValues.nome_cliente}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="nome_dama"
+                                label="Nome da Dama"
+                                value={formValues.nome_dama}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="nome_noiva"
+                                label="Nome da Noiva"
+                                value={formValues.nome_noiva}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="idade"
+                                label="Idade"
+                                type="number"
+                                value={formValues.idade}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="cpf"
+                                label="CPF"
+                                type="tel"
+                                value={formValues.cpf}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="data_venda"
+                                label="Data da Venda"
+                                type="date"
+                                value={formValues.data_venda}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="data_evento"
+                                label="Data do Evento"
+                                type="date"
+                                value={formValues.data_evento}
+                                onChange={handleChangeDataEvento}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="data_retirada"
+                                label="Data da Retirada"
+                                type="date"
+                                value={formValues.data_retirada}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="data_devolucao"
+                                label="Data da Devolução"
+                                type="date"
+                                value={formValues.data_devolucao}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="valor_total"
+                                label="Valor Total"
+                                type="number"
+                                InputProps={{
+                                  startAdornment: (
+                                        <InputAdornment position="start">R$</InputAdornment>
+                                  ),
+                                }}
+                                value={formValues.valor_total}
+                                onChange={(event) => {
+                                  handleChange(event);
+                                  setDep((prevDep) => !prevDep);
+                                }}
+                                disabled
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="valor_desconto"
+                                label="Valor do Desconto"
+                                type="number"
+                                InputProps={{
+                                  startAdornment: (
+                                        <InputAdornment position="start">R$</InputAdornment>
+                                  ),
+                                }}
+                                value={formValues.valor_desconto}
+                                onChange={(event) => {
+                                  handleChange(event);
+                                  setDep((prevDep) => !prevDep);
+                                }}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="valor_final"
+                                label="Valor Final"
+                                type="number"
+                                InputProps={{
+                                  startAdornment: (
+                                        <InputAdornment position="start">R$</InputAdornment>
+                                  ),
+                                }}
+                                value={formValues.valor_final}
+                                onChange={(event) => {
+                                  handleChange(event);
+                                  setDep((prevDep) => !prevDep);
+                                }}
+                                disabled
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="valor_entrada"
+                                label="Valor da Entrada"
+                                type="number"
+                                InputProps={{
+                                  startAdornment: (
+                                        <InputAdornment position="start">R$</InputAdornment>
+                                  ),
+                                }}
+                                value={formValues.valor_entrada}
+                                onChange={(event) => {
+                                  handleChange(event);
+                                  setDep((prevDep) => !prevDep);
+                                }}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="valor_restante"
+                                label="Valor Restante"
+                                type="number"
+                                InputProps={{
+                                  startAdornment: (
+                                        <InputAdornment position="start">R$</InputAdornment>
+                                  ),
+                                }}
+                                value={formValues.valor_restante}
+                                onChange={(event) => {
+                                  handleChange(event);
+                                  setDep((prevDep) => !prevDep);
+                                }}
+                                disabled
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <TextField
+                                name="observacoes"
+                                label="Observações"
+                                value={formValues.observacoes}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                multiline
+                                rows={4}
+                                inputProps={{ maxLength: 250 }}
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <FormControl fullWidth>
+                                <InputLabel id="vendedor-select-label">Vendedor</InputLabel>
+                                <Select
+                                    MenuProps={{ style: { maxHeight: 300 } }}
+                                    labelId="vendedor-select-label"
+                                    id="vendedor-select"
+                                    name="vendedor"
+                                    value={formValues.vendedor}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    {usuarios.map((usuario) => (
+                                        <MenuItem key={usuario.nome} value={usuario.nome}>
+                                            {usuario.nome}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <Checkbox
+                                checked={isAttChecked}
+                                onChange={handleCheckboxAttChange}
+                            />
+                            Desejo atualizar os dados da locação
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '5px' }}>
+                            <Button
+                                variant="contained"
+                                onClick={handleAtualizarLocacao}
+                                disabled={!isAttChecked}
+                                color="warning"
+                            >
+                                {isLoadingAtt ? 'Atualizando...' : 'Atualizar'}
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '16px' }}>
+                            <Checkbox
+                                checked={isDelChecked}
+                                onChange={handleCheckboxDelChange}
+                            />
+                            Desejo deletar a locação
+                        </Grid>
+                        <Grid item xs={12} style={{ marginTop: '5px' }}>
+                            <Button
+                                variant="contained"
+                                onClick={handleDeletarLocacao}
+                                disabled={!isDelChecked}
+                                color="error"
+                            >
+                                {isLoadingDel ? 'Deletando...' : 'Deletar'}
+                            </Button>
+                        </Grid>
+                        {locacaoAtualizado ? (
+                            <SuccessMessage
+                                open={flagSucesso}
+                                message={mensagemSucesso}
+                                onClose={handleClose}/>
+                        ) : undefined}
+                    </Grid>
 
-        <Box sx={{ flex: 1, marginTop: '-40px' }}>
-          {locacaoEncontrado === undefined ? null : locacaoEncontrado ? (
-            <>
-              <Box sx={{ display: 'flex', gap: 6, mt: 4 }}>
-                <FormularioLocacao />
-                <FormularioTrajes />
-                <FormularioAcessorios />
-              </Box>
-            </>
-          ) : (
-            <Box>
-              {mensagemErro && (
-                <Typography 
-                  color="error" 
-                  sx={{ mb: 2 }}
-                >
-                  {typeof mensagemErro === 'object' ? mensagemErro.message : mensagemErro}
-                </Typography>
-              )}
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </Box>
+                    <Grid item xs={3}>
+                        <Typography variant="h6" style={{ marginTop: '16px' }}>
+                            Trajes Locados
+                        </Typography>
+                        <FormControl fullWidth style={{ marginTop: '17px' }}>
+                            <InputLabel id="trajes-select-label">Trajes</InputLabel>
+                            <Select
+                                MenuProps={{ style: { maxHeight: 300 } }}
+                                labelId="trajes-select-label"
+                                id="trajes-select"
+                                value={trajeSelecionado.codigo || ''}
+                                onChange={handleTrajeSelecionadoChange}
+                            >
+                                {trajes.map((traje) => (
+                                    <MenuItem key={traje.codigo} value={traje.codigo}>
+                                        {traje.codigo}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <div
+                            style={{
+                              border: '1px solid #ccc',
+                              padding: '10px',
+                              marginBottom: '10px',
+                              // marginTop: "16px",
+                            }}
+                        >
+                            {formValues.codigo_trajes.map((codigo, index) => (
+                                <div
+                                    key={`traje-${index}`}
+                                    style={{
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      marginBottom: '10px',
+                                      marginTop: '10px',
+                                    }}
+                                >
+                                    <TextField
+                                        name="codigo_traje"
+                                        label="Código"
+                                        disabled={false}
+                                        value={formValues.codigo_trajes[index]}
+                                        onChange={(e) => {
+                                          const newValue = formValues.codigo_trajes.slice();
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            codigo_trajes: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                    />
+                                    <TextField
+                                        name="tamanho_traje"
+                                        label="Tamanho"
+                                        disabled={false}
+                                        value={formValues.tamanho_trajes[index]}
+                                        onChange={(e) => {
+                                          const newValue = formValues.tamanho_trajes.slice();
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            tamanho_trajes: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                        style={{ marginTop: '16px' }}
+                                    />
+                                    <TextField
+                                        name="descricao_traje"
+                                        label="Descrição"
+                                        disabled={false}
+                                        value={formValues.descricao_trajes[index]}
+                                        onChange={(e) => {
+                                          const newValue = formValues.descricao_trajes.slice();
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            descricao_trajes: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                        style={{ marginTop: '16px' }}
+                                    />
+                                    <TextField
+                                        name="valor_traje"
+                                        label="Valor"
+                                        disabled={false}
+                                        value={formValues.valor_trajes[index]}
+                                        onChange={(e) => {
+                                          const newValue = formValues.valor_trajes.slice();
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            valor_trajes: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                        style={{ marginTop: '16px' }}
+                                    />
+                                    <IconButton onClick={() => handleTrajeRemovido(index)}>
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                </div>
+                            ))}
+                        </div>
+                    </Grid>
+
+                    <Grid item xs={3}>
+                        <Typography variant="h6" style={{ marginTop: '16px' }}>
+                            Acessórios Locados
+                        </Typography>
+                        <FormControl fullWidth style={{ marginTop: '16px' }}>
+                            <InputLabel id="acessorios-select-label">
+                                Acessórios
+                            </InputLabel>
+                            <Select
+                                MenuProps={{ style: { maxHeight: 300 } }}
+                                labelId="acessorios-select-label"
+                                id="acessorios-select"
+                                value={acessorioSelecionado.codigo || ''}
+                                onChange={handleAcessorioSelecionadoChange}
+                            >
+                                {acessorios.map((acessorio) => (
+                                    <MenuItem key={acessorio.codigo} value={acessorio.codigo}>
+                                        {acessorio.codigo}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <div
+                            style={{
+                              border: '1px solid #ccc',
+                              padding: '10px',
+                              marginBottom: '10px',
+                            }}
+                        >
+                            {formValues.codigo_acessorios.map((codigo, index) => (
+                                <div
+                                    key={`acessorio-${index}`}
+                                    style={{
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      marginBottom: '10px',
+                                      marginTop: '10px',
+                                    }}
+                                >
+                                    <TextField
+                                        name="codigo_acessorio"
+                                        label="Código"
+                                        disabled={false}
+                                        value={formValues.codigo_acessorios[index]}
+                                        onChange={(e) => {
+                                          const newValue = Array.from(formValues.codigo_acessorios);
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            codigo_acessorios: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                    />
+                                    <TextField
+                                        name="descricao_acessorio"
+                                        label="Descrição"
+                                        disabled={false}
+                                        value={formValues.descricao_acessorios[index]}
+                                        onChange={(e) => {
+                                          const newValue = Array.from(
+                                            formValues.descricao_acessorios,
+                                          );
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            descricao_acessorios: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                        style={{ marginTop: '16px' }}
+                                    />
+                                    <TextField
+                                        name="valor_acessorio"
+                                        label="Valor"
+                                        disabled={false}
+                                        value={formValues.valor_acessorios[index]}
+                                        onChange={(e) => {
+                                          const newValue = Array.from(formValues.valor_acessorios);
+                                          newValue[index] = e.target.value;
+                                          setFormValues((prevState) => ({
+                                            ...prevState,
+                                            valor_acessorios: newValue,
+                                          }));
+                                        }}
+                                        InputLabelProps={{ shrink: true }}
+                                        style={{ marginTop: '16px' }}
+                                    />
+                                    <IconButton onClick={() => handleAcessorioRemovido(index)}>
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                </div>
+                            ))}
+                        </div>
+                    </Grid>
+                </Grid>
+            ) : (
+                <div>
+                    <ErrorMessage message={mensagemErro}/>
+                    {locacaoDeletado ? (
+                        <SuccessMessage
+                            open={flagSucesso}
+                            message={mensagemSucesso}
+                            onClose={handleClose}/>
+                    ) : undefined}
+                </div>
+            )}
+        </div>
   );
 }
