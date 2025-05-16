@@ -20,12 +20,26 @@ body {
   padding: 32px;
   padding-top: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  transition: all 0.3s ease;
+}
+.main-content:hover {
   overflow-y: auto;
 }
+.main-content::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 8px;
+}
+.main-content:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+}
 
-.main-content h1 {
-  margin-bottom: 24px;
+h1 {
   font-size: 22px;
-  color: #333;
 }
 

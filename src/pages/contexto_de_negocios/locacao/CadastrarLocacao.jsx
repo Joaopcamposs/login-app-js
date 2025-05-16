@@ -1,3 +1,4 @@
+import './styles/CadastrarLocacao.css';
 import React, { useState, useEffect } from 'react';
 import {
   TextField,
@@ -388,13 +389,18 @@ export default function CadastrarLocacao() {
   }, [newAcessoriosSelecionados, newTrajesSelecionados, dep]);
 
   return (
-    <div>
+    <div className="cadastrar-locacao">
       <form onSubmit={handleCadastrarLocacao}>
         <Container
-          style={{ marginTop: '20px', display: 'flex', flexDirection: 'row' }}
+          style={{
+            marginTop: '30px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            alignItems: 'start',
+          }}
         >
-          <div style={{ width: '33%', marginRight: '10px' }}>
-            <Grid container spacing={2}>
+          <div className="locacao-container">
+            <Grid container spacing={0.5}>
               <Grid>
                 <Typography variant="h6">Dados da Locação</Typography>
               </Grid>
@@ -649,14 +655,14 @@ export default function CadastrarLocacao() {
             </Grid>
           </div>
 
-          <div style={{ width: '33%', marginRight: '10px' }}>
-            <Grid container spacing={2}>
+          <div className="traje-container">
+            <Grid container spacing={0.5}>
               <Grid >
                 <Typography variant="h6">Trajes</Typography>
               </Grid>
               <Grid >
                 <FormControl fullWidth>
-                  <InputLabel id="trajes-select-label">Trajes</InputLabel>
+                  <InputLabel id="trajes-select-label"></InputLabel>
                   <Select
                     MenuProps={{ style: { maxHeight: 300 } }}
                     labelId="trajes-select-label"
@@ -793,15 +799,14 @@ export default function CadastrarLocacao() {
             </Grid>
           </div>
 
-          <div style={{ width: '33%' }}>
-            <Grid container spacing={2}>
+          <div className="acessorio-container">
+            <Grid container spacing={0.5}>
               <Grid >
                 <Typography variant="h6">Acessórios</Typography>
               </Grid>
               <Grid >
                 <FormControl fullWidth>
                   <InputLabel id="acessorios-select-label">
-                    Acessórios
                   </InputLabel>
                   <Select
                     MenuProps={{ style: { maxHeight: 300 } }}

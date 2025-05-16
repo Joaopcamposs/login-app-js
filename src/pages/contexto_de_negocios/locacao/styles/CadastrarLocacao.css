@@ -1,0 +1,49 @@
+form {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  form > div {
+    width: 100%;
+    max-width: 270px;
+  }
+
+  .cadastrar-locacao {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  /* Para limitar a largura dos campos a 220px */
+  form .MuiFormControl-root,
+  form .MuiInputBase-root,
+  form .MuiTextField-root,
+  form .MuiSelect-root,
+  form .MuiAutocomplete-root {
+    width: 270px;
+    max-width: 100%;
+  }
+  
+  /* Adiciona espaçamento entre os inputs dentro de cada coluna */
+  form .MuiGrid-container > .MuiGrid-root {
+    margin-bottom: 12px;
+  }
+  
+  /* Caixa de seleção de trajes e acessórios */
+  form .traje-container,
+  form .acessorio-container {
+    max-width: 270px;
+  }
+
+  form .traje-container .MuiFormControl-root:not(:first-child),
+  form .acessorio-container .MuiFormControl-root:not(:first-child) {
+    margin-top: 8px;
+  }
+
+  form .locacao-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
