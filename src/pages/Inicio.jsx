@@ -13,14 +13,13 @@ import Usuarios from './contexto_de_negocios/usuarios/Usuarios'
 
 export default function Inicio() {
   const location = useLocation();
-  const [, , entidadeRaw, operacaoRaw] = location.pathname.split('/');
+  const [, , entidadeRaw] = location.pathname.split('/');
 
   const entidade = entidadeRaw || 'inicio';
-  const operacao = operacaoRaw || 'consultar';
 
   const renderConteudoCentral = () => {
     if (entidade === 'inicio') return <ProximasLocacoes />;
-    if (entidade === 'locacao') return <Locacao operacao={operacao} />;
+    if (entidade === 'locacao') return <Locacao />;
     if (entidade === 'contrato') return <GeradorContrato />;
     if (entidade === 'clientes') return <Clientes />;
     if (entidade === 'disponibilidades') return <Disponibilidades />;
