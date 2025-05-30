@@ -80,52 +80,54 @@ export default function ProximasLocacoes() {
     }
 
     return (
-      <table className="locacoes-table">
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Dama</th>
-            <th>Idade</th>
-            <th>Data Retirada</th>
-            <th>Data Evento</th>
-            <th>Valor Restante</th>
-            <th>Observações</th>
-            <th>Códigos Trajes</th>
-            <th>Descrição Trajes</th>
-            <th>Tamanhos</th>
-            <th>Códigos Acessórios</th>
-            <th>Descrição Acessórios</th>
-          </tr>
-        </thead>
-        <tbody>
-          {locacoesArray.map((locacao, idx) => (
-            <tr key={idx} className={idx % 2 === 0 ? 'linha-par' : 'linha-impar'}>
-              <td>{locacao.nome_cliente}</td>
-              <td>{locacao.nome_dama}</td>
-              <td>{locacao.idade}</td>
-              <td>{formatarData(locacao.data_retirada)}</td>
-              <td>{formatarData(locacao.data_evento)}</td>
-              <td>{locacao.valor_restante}</td>
-              <td>{locacao.observacoes}</td>
-              <td>{locacao.trajes_locados.map(
-                      (traje) => traje.codigo
-                    ).join("; ")}</td>
-              <td>{locacao.trajes_locados.map(
-                      (traje) => traje.descricao
-                    ).join("; ")}</td>
-              <td>{locacao.trajes_locados.map(
-                      (traje) => traje.tamanho
-                    ).join("; ")}</td>
-              <td>{locacao.acessorios_locados.map(
-                      (acessorio) => acessorio.codigo
-                    ).join("; ")}</td>
-              <td>{locacao.acessorios_locados.map(
-                      (acessorio) => acessorio.descricao
-                    ).join("; ")}</td>
+      <div className="table-container">
+        <table className="locacoes-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Dama</th>
+              <th>Idade</th>
+              <th>Data Retirada</th>
+              <th>Data Evento</th>
+              <th>Valor Restante</th>
+              <th>Observações</th>
+              <th>Códigos Trajes</th>
+              <th>Descrição Trajes</th>
+              <th>Tamanhos</th>
+              <th>Códigos Acessórios</th>
+              <th>Descrição Acessórios</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {locacoesArray.map((locacao, idx) => (
+              <tr key={idx} className={idx % 2 === 0 ? 'linha-par' : 'linha-impar'}>
+                <td>{locacao.nome_cliente}</td>
+                <td>{locacao.nome_dama}</td>
+                <td>{locacao.idade}</td>
+                <td>{formatarData(locacao.data_retirada)}</td>
+                <td>{formatarData(locacao.data_evento)}</td>
+                <td>{locacao.valor_restante}</td>
+                <td>{locacao.observacoes}</td>
+                <td>{locacao.trajes_locados.map(
+                        (traje) => traje.codigo
+                      ).join("; ")}</td>
+                <td>{locacao.trajes_locados.map(
+                        (traje) => traje.descricao
+                      ).join("; ")}</td>
+                <td>{locacao.trajes_locados.map(
+                        (traje) => traje.tamanho
+                      ).join("; ")}</td>
+                <td>{locacao.acessorios_locados.map(
+                        (acessorio) => acessorio.codigo
+                      ).join("; ")}</td>
+                <td>{locacao.acessorios_locados.map(
+                        (acessorio) => acessorio.descricao
+                      ).join("; ")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )
   }
 
